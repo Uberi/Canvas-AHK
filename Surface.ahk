@@ -119,24 +119,23 @@ class Surface
 
     DrawArc(Pen,X,Y,W,H,Start,Sweep)
     {
-        this.CheckRectangle(X,Y,W,H)
-        If Start Is Not Number
-            throw Exception("Invalid start angle: " . Start,-1)
-        If Sweep Is Not Number
-            throw Exception("Invalid sweep angle: " . Sweep,-1)
+        this.CheckSector(X,Y,W,H,Start,Sweep)
 
         Result := DllCall("gdiplus\GdipDrawArc","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
         If Result != 0 ;Status.Ok
             throw Exception("Could not draw arc (GDI+ error " . Result . ").")
     }
 
-    DrawRectangle(Pen,X,Y,W,H)
+    DrawCurve(Pen,Points,Closed = False)
     {
-        this.CheckRectangle(X,Y,W,H)
+        Length := this.CheckPoints(Points,PointArray)
 
-        Result := DllCall("gdiplus\GdipDrawRectangle","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
+        If Closed
+            Result := DllCall("gdiplus\GdipDrawClosedCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+        Else
+            Result := DllCall("gdiplus\GdipDrawCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
         If Result != 0 ;Status.Ok
-            throw Exception("Could not draw rectangle (GDI+ error " . Result . ").")
+            throw Exception("Could not draw curve (GDI+ error " . Result . ").")
     }
 
     DrawEllipse(Pen,X,Y,W,H)
@@ -148,13 +147,9 @@ class Surface
             throw Exception("Could not draw ellipse (GDI+ error " . Result . ").")
     }
 
-    DrawPie(Pen,X,Y,W,H)
+    DrawPie(Pen,X,Y,W,H,Start,Sweep)
     {
-        this.CheckRectangle(X,Y,W,H)
-        If Start Is Not Number
-            throw Exception("Invalid start angle: " . Start,-1)
-        If Sweep Is Not Number
-            throw Exception("Invalid sweep angle: " . Sweep,-1)
+        this.CheckSector(X,Y,W,H,Start,Sweep)
 
         Result := DllCall("gdiplus\GdipDrawPie","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
         If Result != 0 ;Status.Ok
@@ -170,22 +165,49 @@ class Surface
             throw Exception("Could not draw polygon (GDI+ error " . Result . ").")
     }
 
-    DrawCurve(Pen,Points)
+    DrawRectangle(Pen,X,Y,W,H)
     {
-        Length := this.CheckPoints(Points,PointArray)
+        this.CheckRectangle(X,Y,W,H)
 
-        Result := DllCall("gdiplus\GdipDrawCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+        Result := DllCall("gdiplus\GdipDrawRectangle","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
         If Result != 0 ;Status.Ok
-            throw Exception("Could not draw curve (GDI+ error " . Result . ").")
+            throw Exception("Could not draw rectangle (GDI+ error " . Result . ").")
     }
 
-    DrawClosedCurve(Pen,Points)
+    FillCurve(Brush,Points)
     {
         Length := this.CheckPoints(Points,PointArray)
 
-        Result := DllCall("gdiplus\GdipDrawClosedCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+        Result := DllCall("gdiplus\GdipFillClosedCurve","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"UPtr",&PointArray,"Int",Length)
         If Result != 0 ;Status.Ok
-            throw Exception("Could not draw closed curve (GDI+ error " . Result . ").")
+            throw Exception("Could not fill curve (GDI+ error " . Result . ").")
+    }
+
+    FillEllipse(Brush,X,Y,W,H)
+    {
+        this.CheckRectangle(X,Y,W,H)
+
+        Result := DllCall("gdiplus\GdipFillEllipse","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not fill ellipse (GDI+ error " . Result . ").")
+    }
+
+    FillPie(Brush,X,Y,W,H,Start,Sweep)
+    {
+        this.CheckSector(X,Y,W,H,Start,Sweep)
+
+        Result := DllCall("gdiplus\GdipFillPie","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not fill pie (GDI+ error " . Result . ").")
+    }
+
+    FillPolygon(Brush,Points)
+    {
+        Length := this.CheckPoints(Points,PointArray)
+
+        Result := DllCall("gdiplus\GdipFillPolygon","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"UPtr",&PointArray,"Int",Length)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not fill polygon (GDI+ error " . Result . ").")
     }
 
     FillRectangle(Brush,X,Y,W,H)
@@ -195,6 +217,22 @@ class Surface
         Result := DllCall("gdiplus\GdipFillRectangle","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
         If Result != 0 ;Status.Ok
             throw Exception("Could not fill rectangle (GDI+ error " . Result . ").")
+    }
+
+    CheckSector(X,Y,W,H,Start,Sweep)
+    {
+        If X Is Not Number
+            throw Exception("Invalid X-axis coordinate: " . X,-2)
+        If Y Is Not Number
+            throw Exception("Invalid Y-axis coordinate: " . Y,-2)
+        If W Is Not Number
+            throw Exception("Invalid width: " . W,-2)
+        If H Is Not Number
+            throw Exception("Invalid height: " . H,-2)
+        If Start Is Not Number
+            throw Exception("Invalid start angle: " . Start,-1)
+        If Sweep Is Not Number
+            throw Exception("Invalid sweep angle: " . Sweep,-1)
     }
 
     CheckRectangle(X,Y,W,H)
