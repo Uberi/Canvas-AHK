@@ -90,6 +90,49 @@ class Surface
             throw Exception("Could not delete memory device context.")
     }
 
+    DrawLine(Pen,X,Y,W,H)
+    {
+        If X Is Not Number
+            throw Exception("Invalid X-axis coordinate: " . X,-1)
+        If Y Is Not Number
+            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
+        If W Is Not Number
+            throw Exception("Invalid width: " . W,-1)
+        If H Is Not Number
+            throw Exception("Invalid height: " . H,-1)
+
+        Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"FLoat",Y,"Float",W,"Float",H)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not draw line (GDI+ error " . Result . ").")
+    }
+
+    DrawLines(Pen,Lines)
+    {
+        Length := Lines.MaxIndex()
+        If !Length
+            throw Exception("Invalid line set: " . Lines,-1)
+        VarSetCapacity(PointArray,Length << 3)
+        Offset := 0
+        Loop, %Length%
+        {
+            Point := Lines[A_Index]
+            If !IsObject(Point)
+                throw Exception("Invalid point: " . Point,-1)
+            PointX := Point[1]
+            PointY := Point[2]
+            If PointX Is Not Number
+                throw Exception("Invalid X-axis coordinate: " . PointX,-1)
+            If PointY Is Not Number
+                throw Exception("Invalid X-axis coordinate: " . PointX,-1)
+
+            NumPut(PointX,PointArray,Offset,"Float"), Offset += 4
+            NumPut(PointY,PointArray,Offset,"Float"), Offset += 4
+        }
+        Result := DllCall("gdiplus\GdipDrawLines","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not draw rectangle (GDI+ error " . Result . ").")
+    }
+
     DrawRectangle(Pen,X,Y,W,H)
     {
         If X Is Not Number

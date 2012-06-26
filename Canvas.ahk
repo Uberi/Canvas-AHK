@@ -19,6 +19,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+;wip: documentation
 ;wip: add hatch brush, texture brush, and linear/radial gradient brush capabilities to Brush class
 ;wip: use CachedBitmap for animations: http://msdn.microsoft.com/en-us/library/ms533975(v=vs.85).aspx
 ;wip: see methods here: http://www.w3schools.com/html5/html5_ref_canvas.asp
