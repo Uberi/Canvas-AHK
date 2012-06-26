@@ -90,44 +90,28 @@ class Surface
             throw Exception("Could not delete memory device context.")
     }
 
+    Clear(Color = 0x00000000)
+    {
+        If Color Is Not Integer
+            throw Exception("Invalid color: " . Color . ".",-1)
+        Result := DllCall("gdiplus\GdipGraphicsClear","UPtr",this.pGraphics,"UInt",Color)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not clear graphics (GDI+ error " . Result . ").")
+    }
+
     DrawLine(Pen,X,Y,W,H)
     {
-        If X Is Not Number
-            throw Exception("Invalid X-axis coordinate: " . X,-1)
-        If Y Is Not Number
-            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
-        If W Is Not Number
-            throw Exception("Invalid width: " . W,-1)
-        If H Is Not Number
-            throw Exception("Invalid height: " . H,-1)
+        this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"FLoat",Y,"Float",W,"Float",H)
         If Result != 0 ;Status.Ok
             throw Exception("Could not draw line (GDI+ error " . Result . ").")
     }
 
-    DrawLines(Pen,Lines)
+    DrawLines(Pen,Points)
     {
-        Length := Lines.MaxIndex()
-        If !Length
-            throw Exception("Invalid line set: " . Lines,-1)
-        VarSetCapacity(PointArray,Length << 3)
-        Offset := 0
-        Loop, %Length%
-        {
-            Point := Lines[A_Index]
-            If !IsObject(Point)
-                throw Exception("Invalid point: " . Point,-1)
-            PointX := Point[1]
-            PointY := Point[2]
-            If PointX Is Not Number
-                throw Exception("Invalid X-axis coordinate: " . PointX,-1)
-            If PointY Is Not Number
-                throw Exception("Invalid X-axis coordinate: " . PointX,-1)
+        Length := this.CheckPoints(Points,PointArray)
 
-            NumPut(PointX,PointArray,Offset,"Float"), Offset += 4
-            NumPut(PointY,PointArray,Offset,"Float"), Offset += 4
-        }
         Result := DllCall("gdiplus\GdipDrawLines","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
         If Result != 0 ;Status.Ok
             throw Exception("Could not draw lines (GDI+ error " . Result . ").")
@@ -135,14 +119,7 @@ class Surface
 
     DrawArc(Pen,X,Y,W,H,Start,Sweep)
     {
-        If X Is Not Number
-            throw Exception("Invalid X-axis coordinate: " . X,-1)
-        If Y Is Not Number
-            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
-        If W Is Not Number
-            throw Exception("Invalid width: " . W,-1)
-        If H Is Not Number
-            throw Exception("Invalid height: " . H,-1)
+        this.CheckRectangle(X,Y,W,H)
         If Start Is Not Number
             throw Exception("Invalid start angle: " . Start,-1)
         If Sweep Is Not Number
@@ -153,26 +130,9 @@ class Surface
             throw Exception("Could not draw arc (GDI+ error " . Result . ").")
     }
 
-    DrawBezier()
-    {
-        ;wip
-    }
-
-    DrawBeziers()
-    {
-        ;wip
-    }
-
     DrawRectangle(Pen,X,Y,W,H)
     {
-        If X Is Not Number
-            throw Exception("Invalid X-axis coordinate: " . X,-1)
-        If Y Is Not Number
-            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
-        If W Is Not Number
-            throw Exception("Invalid width: " . W,-1)
-        If H Is Not Number
-            throw Exception("Invalid height: " . H,-1)
+        this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipDrawRectangle","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
         If Result != 0 ;Status.Ok
@@ -181,33 +141,96 @@ class Surface
 
     DrawEllipse(Pen,X,Y,W,H)
     {
-        If X Is Not Number
-            throw Exception("Invalid X-axis coordinate: " . X,-1)
-        If Y Is Not Number
-            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
-        If W Is Not Number
-            throw Exception("Invalid width: " . W,-1)
-        If H Is Not Number
-            throw Exception("Invalid height: " . H,-1)
+        this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipDrawEllipse","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
         If Result != 0 ;Status.Ok
             throw Exception("Could not draw ellipse (GDI+ error " . Result . ").")
     }
 
+    DrawPie(Pen,X,Y,W,H)
+    {
+        this.CheckRectangle(X,Y,W,H)
+        If Start Is Not Number
+            throw Exception("Invalid start angle: " . Start,-1)
+        If Sweep Is Not Number
+            throw Exception("Invalid sweep angle: " . Sweep,-1)
+
+        Result := DllCall("gdiplus\GdipDrawPie","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not draw pie (GDI+ error " . Result . ").")
+    }
+
+    DrawPolygon(Pen,Points)
+    {
+        Length := this.CheckPoints(Points,PointArray)
+
+        Result := DllCall("gdiplus\GdipDrawPolygon","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not draw polygon (GDI+ error " . Result . ").")
+    }
+
+    DrawCurve(Pen,Points)
+    {
+        Length := this.CheckPoints(Points,PointArray)
+
+        Result := DllCall("gdiplus\GdipDrawCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not draw curve (GDI+ error " . Result . ").")
+    }
+
+    DrawClosedCurve(Pen,Points)
+    {
+        Length := this.CheckPoints(Points,PointArray)
+
+        Result := DllCall("gdiplus\GdipDrawClosedCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not draw closed curve (GDI+ error " . Result . ").")
+    }
+
     FillRectangle(Brush,X,Y,W,H)
     {
-        If X Is Not Number
-            throw Exception("Invalid X-axis coordinate: " . X,-1)
-        If Y Is Not Number
-            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
-        If W Is Not Number
-            throw Exception("Invalid width: " . W,-1)
-        If H Is Not Number
-            throw Exception("Invalid height: " . H,-1)
+        this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipFillRectangle","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
         If Result != 0 ;Status.Ok
             throw Exception("Could not fill rectangle (GDI+ error " . Result . ").")
+    }
+
+    CheckRectangle(X,Y,W,H)
+    {
+        If X Is Not Number
+            throw Exception("Invalid X-axis coordinate: " . X,-2)
+        If Y Is Not Number
+            throw Exception("Invalid Y-axis coordinate: " . Y,-2)
+        If W Is Not Number
+            throw Exception("Invalid width: " . W,-2)
+        If H Is Not Number
+            throw Exception("Invalid height: " . H,-2)
+    }
+
+    CheckPoints(Points,ByRef PointArray)
+    {
+        Length := Points.MaxIndex()
+        If !Length
+            throw Exception("Invalid point set: " . Points,-2)
+        VarSetCapacity(PointArray,Length << 3)
+        Offset := 0
+        Loop, %Length%
+        {
+            Point := Points[A_Index]
+            If !IsObject(Point)
+                throw Exception("Invalid point: " . Point,-2)
+            PointX := Point[1]
+            PointY := Point[2]
+            If PointX Is Not Number
+                throw Exception("Invalid X-axis coordinate: " . PointX,-2)
+            If PointY Is Not Number
+                throw Exception("Invalid X-axis coordinate: " . PointX,-2)
+
+            NumPut(PointX,PointArray,Offset,"Float"), Offset += 4
+            NumPut(PointY,PointArray,Offset,"Float"), Offset += 4
+        }
+        Return, Length
     }
 }
