@@ -76,10 +76,10 @@ class Viewport
         If H Is Not Integer
             throw Exception("Invalid height: " . H,-1)
 
-        If W <= 0
-            W := this.Width - W
-        If H <= 0
-            H := this.Height - H
+        If (W <= 0 || W >= this.Width)
+            throw Exception("Invalid width: " . W,-1)
+        If (H <= 0 || H >= this.Height)
+            throw Exception("Invalid height: " . W,-1)
 
         If !DllCall("GdiFlush")
             throw Exception("Could not flush GDI drawing batch.")
