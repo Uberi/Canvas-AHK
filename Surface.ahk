@@ -230,9 +230,9 @@ class Surface
         If H Is Not Number
             throw Exception("Invalid height: " . H,-2)
         If Start Is Not Number
-            throw Exception("Invalid start angle: " . Start,-1)
+            throw Exception("Invalid start angle: " . Start,-2)
         If Sweep Is Not Number
-            throw Exception("Invalid sweep angle: " . Sweep,-1)
+            throw Exception("Invalid sweep angle: " . Sweep,-2)
     }
 
     CheckRectangle(X,Y,W,H)
