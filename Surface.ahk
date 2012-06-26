@@ -130,7 +130,27 @@ class Surface
         }
         Result := DllCall("gdiplus\GdipDrawLines","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
         If Result != 0 ;Status.Ok
-            throw Exception("Could not draw rectangle (GDI+ error " . Result . ").")
+            throw Exception("Could not draw lines (GDI+ error " . Result . ").")
+    }
+
+    DrawArc(Pen,X,Y,W,H,Start,Sweep)
+    {
+        If X Is Not Number
+            throw Exception("Invalid X-axis coordinate: " . X,-1)
+        If Y Is Not Number
+            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
+        If W Is Not Number
+            throw Exception("Invalid width: " . W,-1)
+        If H Is Not Number
+            throw Exception("Invalid height: " . H,-1)
+        If Start Is Not Number
+            throw Exception("Invalid start angle: " . Start,-1)
+        If Sweep Is Not Number
+            throw Exception("Invalid sweep angle: " . Sweep,-1)
+
+        Result := DllCall("gdiplus\GdipDrawArc","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not draw arc (GDI+ error " . Result . ").")
     }
 
     DrawRectangle(Pen,X,Y,W,H)
