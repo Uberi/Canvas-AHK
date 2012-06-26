@@ -153,6 +153,16 @@ class Surface
             throw Exception("Could not draw arc (GDI+ error " . Result . ").")
     }
 
+    DrawBezier()
+    {
+        ;wip
+    }
+
+    DrawBeziers()
+    {
+        ;wip
+    }
+
     DrawRectangle(Pen,X,Y,W,H)
     {
         If X Is Not Number
@@ -167,6 +177,22 @@ class Surface
         Result := DllCall("gdiplus\GdipDrawRectangle","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
         If Result != 0 ;Status.Ok
             throw Exception("Could not draw rectangle (GDI+ error " . Result . ").")
+    }
+
+    DrawEllipse(Pen,X,Y,W,H)
+    {
+        If X Is Not Number
+            throw Exception("Invalid X-axis coordinate: " . X,-1)
+        If Y Is Not Number
+            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
+        If W Is Not Number
+            throw Exception("Invalid width: " . W,-1)
+        If H Is Not Number
+            throw Exception("Invalid height: " . H,-1)
+
+        Result := DllCall("gdiplus\GdipDrawEllipse","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
+        If Result != 0 ;Status.Ok
+            throw Exception("Could not draw ellipse (GDI+ error " . Result . ").")
     }
 
     FillRectangle(Brush,X,Y,W,H)
