@@ -33,7 +33,7 @@ Gui, +LastFound
 s := new Canvas.Surface(200,200)
 
 v := new Canvas.Viewport(WinExist())
-v.Select(s)
+v.Attach(s)
 
 p := new Canvas.Pen(0x40FF0000)
 Loop, 2000
@@ -47,10 +47,17 @@ b := new Canvas.Brush(0xAA0000FF)
 s.FillRectangle(b,50,50,50,50)
 
 Gui, Show, w200 h200, Canvas Demo
+
+t := new Canvas.Pen(0xFF00FF00)
 Return
 
 GuiClose:
 ExitApp
+
+Space::
+s.DrawEllipse(t,50,50,100,100)
+v.Refresh()
+Return
 
 class Canvas
 {

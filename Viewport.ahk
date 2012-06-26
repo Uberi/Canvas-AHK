@@ -58,7 +58,7 @@ class Viewport
             throw Exception("Could not release window device context.")
     }
 
-    Select(Surface)
+    Attach(Surface)
     {
         this.PaintData.hMemoryDC := Surface.hMemoryDC
         this.Width := Surface.Width
@@ -67,19 +67,19 @@ class Viewport
 
     Refresh(X = 0,Y = 0,W = 0,H = 0)
     {
-        If X Is Not Integer
+        If (X < 0 || X > this.Width)
             throw Exception("Invalid X-axis coordinate: " . X,-1)
-        If Y Is Not Integer
+        If (Y < 0 || Y > this.Height)
             throw Exception("Invalid Y-axis coordinate: " . Y,-1)
-        If W Is Not Integer
+        If (W < 0 || W > this.Width)
             throw Exception("Invalid width: " . W,-1)
-        If H Is Not Integer
-            throw Exception("Invalid height: " . H,-1)
-
-        If (W <= 0 || W >= this.Width)
-            throw Exception("Invalid width: " . W,-1)
-        If (H <= 0 || H >= this.Height)
+        If (H < 0 || H > this.Height)
             throw Exception("Invalid height: " . W,-1)
+
+        If W = 0
+            W := this.Width
+        If H = 0
+            H := this.Height
 
         If !DllCall("GdiFlush")
             throw Exception("Could not flush GDI drawing batch.")

@@ -63,10 +63,10 @@ class Pen
         static JoinStyles := Object("Miter",0 ;LineJoin.LineJoinMiter
                                    ,"Bevel",1 ;LineJoin.LineJoinBevel
                                    ,"Round",2) ;LineJoin.LineJoinRound
-        static CapStyles := Object("Flat",0 ;LineCap.LineCap
-                                  ,"Square",1 ;LineCap.LineCap
-                                  ,"Round",2 ;LineCap.LineCap
-                                  ,"Triangle",3) ;LineCap.LineCap
+        static CapStyles := Object("Flat",0 ;LineCap.LineCapFlat
+                                  ,"Square",1 ;LineCap.LineCapSquare
+                                  ,"Round",2 ;LineCap.LineCapRound
+                                  ,"Triangle",3) ;LineCap.LineCapTriangle
         If (Key = "Color") ;set pen color
         {
             If Value Is Not Integer
