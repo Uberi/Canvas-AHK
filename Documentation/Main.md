@@ -9,13 +9,34 @@ Types
 ;wip: write about unit system and cartesian coordinate system
 
 ### Color
-;wip: write about ARGB and hex
+Color reference types are written in hexadecimal ARGB format.
+
+Each byte of the four byte color reference forms a single component, and each component is between the range of 0x00 to 0xFF (0 to 255 in decimal):
+
+    0x40FF0000
+      AARRGGBB
+
+| Component | Description |
+|:----------|:------------|
+| A         | Alpha       |
+| R         | Red         |
+| G         | Green       |
+| B         | Blue        |
 
 Surfaces
 --------
-Surfaces represent and allow the manipulation of graphics data. This may include drawing, painting, and more.
+Surfaces represent and allow the manipulation of graphics properties and data. This may include drawing, painting, and more.
 
 ### Canvas.Surface.__New(Width,Height)
+Creates a surface object representing a set of graphics properties and data, having a width of _Width_ (units) and height _Height_ (units).
+
+### Canvas.Surface.Clear(Color = 0x00000000)
+Clears the entire surface to a color defined by _Color_ (color).
+
+### Canvas.Surface.DrawLine(Pen,X,Y,W,H)
+Draws a single line with the pen _Pen_ (Pen), at the X-axis coordinate _X_ (units), Y-axis coordinate _Y_ (units), X-axis extent _W_ (positive or zero units), and Y-axis extent _H_ (positive or zero units).
+
+### Canvas.Surface.DrawLines(Pen,Points)
 ;wip
 
 Viewports
@@ -31,7 +52,7 @@ Creates a viewport object representing a window referenced by the window handle 
 Attaches surface _Surface_ (Canvas.Surface) to the viewport so that it is displayed by the viewport.
 
 ### Canvas.Viewport.Refresh(X = 0,Y = 0,W = 0,H = 0)
-Refreshes the viewport to reflect changes in a region of its attached surface defined by X-axis coordinate _X_ (units), Y-axis coordinate _Y_ (units), width _W_ (units), and height _H_ (units).
+Refreshes the viewport to reflect changes in a region of its attached surface defined by X-axis coordinate _X_ (positive or zero units), Y-axis coordinate _Y_ (positive or zero units), width _W_ (positive or zero units), and height _H_ (positive or zero units).
 
 Pens
 ----
