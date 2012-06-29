@@ -67,7 +67,7 @@ class Surface
             throw Exception("Could not create graphics object from memory device context (GDI+ error " . Result . ").")
         this.pGraphics := pGraphics
 
-        ;wip: set smoothing mode and other modifiable properties as listed here: http://msdn.microsoft.com/en-us/library/windows/desktop/ms534038(v=vs.85).aspx
+        ;wip: set smoothing mode
     }
 
     __Delete()
@@ -103,7 +103,7 @@ class Surface
     {
         this.CheckRectangle(X,Y,W,H)
 
-        Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"FLoat",Y,"Float",W,"Float",H)
+        Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"FLoat",Y,"Float",X + W,"Float",Y + H)
         If Result != 0 ;Status.Ok
             throw Exception("Could not draw line (GDI+ error " . Result . ").")
     }
@@ -225,9 +225,9 @@ class Surface
             throw Exception("Invalid X-axis coordinate: " . X,-2)
         If Y Is Not Number
             throw Exception("Invalid Y-axis coordinate: " . Y,-2)
-        If W Is Not Number
+        If W < 0
             throw Exception("Invalid width: " . W,-2)
-        If H Is Not Number
+        If H < 0
             throw Exception("Invalid height: " . H,-2)
         If Start Is Not Number
             throw Exception("Invalid start angle: " . Start,-2)
@@ -241,9 +241,9 @@ class Surface
             throw Exception("Invalid X-axis coordinate: " . X,-2)
         If Y Is Not Number
             throw Exception("Invalid Y-axis coordinate: " . Y,-2)
-        If W Is Not Number
+        If W < 0
             throw Exception("Invalid width: " . W,-2)
-        If H Is Not Number
+        If H < 0
             throw Exception("Invalid height: " . H,-2)
     }
 
