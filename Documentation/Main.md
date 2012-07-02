@@ -9,7 +9,7 @@ Types
 ;wip: write about unit system and cartesian coordinate system
 
 ### Color
-Color reference types are written in hexadecimal ARGB format.
+Color references represent a specific color and transparency. They are written in hexadecimal ARGB format.
 
 Each byte of the four byte color reference forms a single component, and each component is between the range of 0x00 to 0xFF (0 to 255 in decimal):
 
@@ -22,6 +22,13 @@ Each byte of the four byte color reference forms a single component, and each co
 | R         | Red         |
 | G         | Green       |
 | B         | Blue        |
+
+### Point Set
+Point sets represent one or more 2-dimensional coordinate pairs.
+
+Point sets are arrays of points, which are themselves arrays with two elements each, the first representing the X-axis coordinate (units), the second the Y-axis coordinate (units):
+
+    [[X1,Y1],[X2,Y2]]
 
 Surfaces
 --------
