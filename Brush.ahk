@@ -24,14 +24,14 @@ class Brush
     __New(Color = 0xFFFFFFFF)
     {
         If Color Is Not Integer
-            throw Exception("Invalid color: " . Color . ".",-1)
+            throw Exception("INVALID_INPUT",-1,"Invalid color: " . Color . ".")
 
         ObjInsert(this,"",Object())
 
         ;create the brush
         pBrush := 0, Result := DllCall("gdiplus\GdipCreateSolidFill","UInt",Color,"UPtr*",pBrush)
         If Result != 0 ;Status.Ok
-            throw Exception("Could not create pen (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create brush (GDI+ error " . Result . ").")
         this.pBrush := pBrush
 
         this.Color := Color
@@ -42,7 +42,7 @@ class Brush
         ;delete the brush
         Result := DllCall("gdiplus\GdipDeleteBrush","UPtr",this.pPen)
         If Result != 0 ;Status.Ok
-            throw Exception("Could not delete brush (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete brush (GDI+ error " . Result . ").")
     }
 
     __Get(Key)
@@ -56,10 +56,10 @@ class Brush
         If (Key = "Color") ;set brush color
         {
             If Value Is Not Integer
-                throw Exception("Invalid color: " . Value . ".",-1)
+                throw Exception("INVALID_INPUT",-1,"Invalid color: " . Value . ".")
             Result := DllCall("gdiplus\GdipSetSolidFillColor","UPtr",this.pBrush,"UInt",Value)
             If Result != 0 ;Status.Ok
-                throw Exception("Could not set brush color (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set brush color (GDI+ error " . Result . ").")
         }
         this[""][Key] := Value
         Return, Value

@@ -19,9 +19,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-;wip: documentation
+;wip: combine the draw* and fill* functions: DrawPie(Pen) and FillPie(Brush) -> Pie(Pen) and Pie(Brush)
+;wip: fold pens into brushes; allow brushes to define widths, fills, etc.
 ;wip: finish surface API as per http://msdn.microsoft.com/en-us/library/windows/desktop/ms534038(v=vs.85).aspx
-;wip: add pen capabilities mentioned here: http://flylib.com/books/en/2.72.1.38/1/
 ;wip: add hatch brush, texture brush, and linear/radial gradient brush capabilities to Brush class
 ;wip: use CachedBitmap for animations: http://msdn.microsoft.com/en-us/library/ms533975(v=vs.85).aspx
 ;wip: see methods here: http://www.w3schools.com/html5/html5_ref_canvas.asp
@@ -37,28 +37,24 @@ s := new Canvas.Surface(200,200)
 v := new Canvas.Viewport(WinExist())
 v.Attach(s)
 
-p := new Canvas.Pen(0x40FF0000)
-Loop, 2000
-{
-    Random, X, 0, 150
-    Random, Y, 0, 150
-    s.DrawRectangle(p,X,Y,50,50)
-}
+s.Clear(0xFFFFFF00)
 
+p := new Canvas.Pen(0x80FF0000,10)
+t := new Canvas.Pen(0xFF00FF00,3)
 b := new Canvas.Brush(0xAA0000FF)
+
 s.FillRectangle(b,50,50,50,50)
+ .DrawEllipse(p,70,70,100,100)
+ .DrawCurve(t,[[10,10],[50,10],[10,50]],True)
 
 Gui, Show, w200 h200, Canvas Demo
-
-t := new Canvas.Pen(0xFF00FF00,3)
 Return
 
 GuiClose:
 ExitApp
 
 Space::
-;s.DrawEllipse(t,50,50,100,100)
-s.DrawCurve(t,[[10,10],[50,10],[10,50]],True)
+s.FillPie(t,)
 v.Refresh()
 Return
 
@@ -78,7 +74,7 @@ class Canvas
         NumPut(0,StartupInformation,A_PtrSize + 8) ;suppress external image codecs (disabled)
         Token := 0, Result := DllCall("gdiplus\GdiplusStartup","UPtr*",Token,"UPtr",&StartupInformation,"UPtr",0)
         If Result != 0 ;Status.Ok
-            throw Exception("Could not initialize the GDI+ library (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not initialize the GDI+ library (GDI+ error " . Result . ").")
         this.Token := Token
     }
 

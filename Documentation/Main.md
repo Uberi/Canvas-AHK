@@ -30,6 +30,28 @@ Point sets are arrays of points, which are themselves arrays with two elements e
 
     [[X1,Y1],[X2,Y2]]
 
+Exceptions
+----------
+There are two types of exceptions that may be thrown by this library: invalid input and internal errors. All functions in this library are capable of throwing both types of exception.
+
+### Invalid Input
+Exceptions of this type take the following form:
+
+    throw Exception("INVALID_INPUT",-1,Extra)
+
+Invalid input exceptions represent errors in the input given to a function, such as passing a string when a number was expected, or a decimal number when an integer was expected.
+
+This type of exception is defined by its message being the string "INVALID_INPUT" (Exception.Message). The caller of the function throwing the error will be the exception's routine (Exception.What). Detailed information about the error is available in the exception's extended information (Exception.Extra), but should be used only for debugging purposes.
+
+### Internal Error
+Exceptions of this type take the following form:
+
+    throw Exception("INTERNAL_ERROR",A_ThisFunc,Extra)
+
+Internal error exceptions represent errors in the operation of a function, such as a failed drawing command or an out-of-memory error.
+
+This type of exception is defined by its message being the string "INTERNAL_ERROR" (Exception.Message). The function throwing the error will be the exception's routine (Exception.What). Detailed information about the error is available in the exception's extended information (Exception.Extra), but should be used only for debugging purposes.
+
 Surfaces
 --------
 Surfaces represent and allow the manipulation of graphics properties and data. This may include drawing, painting, and more.
@@ -37,14 +59,26 @@ Surfaces represent and allow the manipulation of graphics properties and data. T
 ### Canvas.Surface.__New(Width,Height)
 Creates a surface object representing a set of graphics properties and data, having a width of _Width_ (units) and height _Height_ (units).
 
+Returns the surface object.
+
 ### Canvas.Surface.Clear(Color = 0x00000000)
 Clears the entire surface to a color defined by _Color_ (color).
+
+Returns the surface object.
 
 ### Canvas.Surface.DrawLine(Pen,X,Y,W,H)
 Draws a single line with the pen _Pen_ (Pen), at the X-axis coordinate _X_ (units), Y-axis coordinate _Y_ (units), X-axis extent _W_ (positive or zero units), and Y-axis extent _H_ (positive or zero units).
 
+Returns the surface object.
+
 ### Canvas.Surface.DrawLines(Pen,Points)
 ;wip
+
+### Canvas.Surface.Width
+The width of the surface (units). Should not be modified.
+
+### Canvas.Surface.Height
+The height of the surface (units). Should not be modified.
 
 Viewports
 ---------
@@ -55,11 +89,19 @@ Surfaces attached to viewports will have their contents displayed in the viewpor
 ### Canvas.Viewport.__New(hWindow)
 Creates a viewport object representing a window referenced by the window handle _hWindow_ (hwnd).
 
+Returns the viewport object.
+
 ### Canvas.Viewport.Attach(Surface)
 Attaches surface _Surface_ (Canvas.Surface) to the viewport so that it is displayed by the viewport.
 
+Returns the viewport object.
+
 ### Canvas.Viewport.Refresh(X = 0,Y = 0,W = 0,H = 0)
 Refreshes the viewport to reflect changes in a region of its attached surface defined by X-axis coordinate _X_ (positive or zero units), Y-axis coordinate _Y_ (positive or zero units), width _W_ (positive or zero units), and height _H_ (positive or zero units).
+
+If _W_ is zero, it will be interpreted as the width of the currently attached surface (Canvas.Surface.Width). If _H_ is zero, it will be interpreted as the height of the currently attached surface (Canvas.Surface.Height).
+
+Returns the viewport object.
 
 Pens
 ----

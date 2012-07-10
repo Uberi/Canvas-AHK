@@ -24,16 +24,16 @@ class Pen
     __New(Color = 0xFFFFFFFF,Width = 1)
     {
         If Color Is Not Integer
-            throw Exception("Invalid color: " . Color . ".",-1)
+            throw Exception("INVALID_INPUT",-1,"Invalid color: " . Color . ".")
         If Width Is Not Number
-            throw Exception("Invalid width: " . Width . ".",-1)
+            throw Exception("INVALID_INPUT",-1,"Invalid width: " . Width . ".")
 
         ObjInsert(this,"",Object())
 
         ;create the pen
         pPen := 0, Result := DllCall("gdiplus\GdipCreatePen1","UInt",Color,"Float",Width,"UInt",2,"UPtr*",pPen) ;Unit.UnitPixel
         If Result != 0 ;Status.Ok
-            throw Exception("Could not create pen (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create pen (GDI+ error " . Result . ").")
         this.pPen := pPen
 
         ;set properties
@@ -50,7 +50,7 @@ class Pen
         ;delete the pen
         Result := DllCall("gdiplus\GdipDeletePen","UPtr",this.pPen)
         If Result != 0 ;Status.Ok
-            throw Exception("Could not delete pen (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete pen (GDI+ error " . Result . ").")
     }
 
     __Get(Key)
@@ -75,50 +75,50 @@ class Pen
         If (Key = "Color") ;set pen color
         {
             If Value Is Not Integer
-                throw Exception("Invalid color: " . Value . ".",-1)
+                throw Exception("INVALID_INPUT",-1,"Invalid color: " . Value . ".")
             Result := DllCall("gdiplus\GdipSetPenColor","UPtr",this.pPen,"UInt",Value)
             If Result != 0 ;Status.Ok
-                throw Exception("Could not set pen color (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen color (GDI+ error " . Result . ").")
         }
         Else If (Key = "Width") ;set pen width
         {
             If Value Is Not Number
-                throw Exception("Invalid width: " . Value . ".",-1)
+                throw Exception("INVALID_INPUT",-1,"Invalid width: " . Value . ".")
             Result := DllCall("gdiplus\GdipSetPenWidth","UPtr",this.pPen,"Float",Value)
             If Result != 0 ;Status.Ok
-                throw Exception("Could not set pen width (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen width (GDI+ error " . Result . ").")
         }
         Else If (Key = "Join") ;set pen line join style
         {
             If !JoinStyles.HasKey(Value)
-                throw Exception("Invalid pen join: " . Value . ".")
+                throw Exception("INVALID_INPUT",-1,"Invalid pen join: " . Value . ".")
             Result := DllCall("gdiplus\GdipSetPenLineJoin","UPtr",this.pPen,"UInt",JoinStyles[Value])
             If Result != 0 ;Status.Ok
-                throw Exception("Could not set pen join (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen join (GDI+ error " . Result . ").")
         }
         Else If (Key = "Type") ;set pen type
         {
             If !TypeStyles.HasKey(Value)
-                throw Exception("Invalid pen type: " . Value . ".")
+                throw Exception("INVALID_INPUT",-1,"Invalid pen type: " . Value . ".")
             Result := DllCall("gdiplus\GdipSetPenDashStyle","UPtr",this.pPen,"UInt",TypeStyles[Value])
             If Result != 0 ;Status.Ok
-                throw Exception("Could not set type (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set type (GDI+ error " . Result . ").")
         }
         Else If (Key = "StartCap") ;set pen start cap
         {
             If !CapStyles.HasKey(Value)
-                throw Exception("Invalid pen start cap: " . Value . ".")
+                throw Exception("INVALID_INPUT",-1,"Invalid pen start cap: " . Value . ".")
             Result := DllCall("gdiplus\GdipSetPenStartCap","UPtr",this.pPen,"UInt",CapStyles[Value])
             If Result != 0 ;Status.Ok
-                throw Exception("Could not set pen start cap (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen start cap (GDI+ error " . Result . ").")
         }
         Else If (Key = "EndCap") ;set pen end cap
         {
             If !CapStyles.HasKey(Value)
-                throw Exception("Invalid pen end cap: " . Value . ".")
+                throw Exception("INVALID_INPUT",-1,"Invalid pen end cap: " . Value . ".")
             Result := DllCall("gdiplus\GdipSetPenStartCap","UPtr",this.pPen,"UInt",CapStyles[Value])
             If Result != 0 ;Status.Ok
-                throw Exception("Could not set pen end cap (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen end cap (GDI+ error " . Result . ").")
         }
         this[""][Key] := Value
         Return, Value

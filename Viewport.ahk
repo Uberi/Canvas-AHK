@@ -28,7 +28,7 @@ class Viewport
         ;obtain a handle to the window device context
         this.hDC := DllCall("GetDC","UPtr",hWindow,"UPtr")
         If !this.hDC
-            throw Exception("Could not obtain window device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain window device context.")
 
         ;subclass window to override WM_PAINT
         this.PaintData := Object()
@@ -38,7 +38,7 @@ class Viewport
         this.pCallback := RegisterCallback(this.PaintCallback,"Fast",4,&this.PaintData)
         this.PaintData.hPreviousCallback := DllCall("SetWindowLong" . ((A_PtrSize != 4) ? "Ptr" : ""),"UPtr",hWindow,"Int",-4,"UPtr",this.pCallback,"UPtr") ;GWL_WNDPROC
         If !this.PaintData.hPreviousCallback
-            throw Exception("Could not subclass window.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not subclass window.")
     }
 
     __Delete()
@@ -47,7 +47,7 @@ class Viewport
         If !DllCall("SetWindowLong" . ((A_PtrSize != 4) ? "Ptr" : ""),"UPtr",this.hWindow,"Int",-4,"UPtr",this.PaintData.hPreviousCallback,"UPtr") ;GWL_WNDPROC
         {
             ObjRelease(&this.PaintData)
-            throw Exception("Could not remove subclass from window.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not remove subclass from window.")
         }
 
         ;remove reference to allow paint data to be freed
@@ -55,7 +55,7 @@ class Viewport
 
         ;release the window device context
         If !DllCall("ReleaseDC","UPtr",this.hWindow,"UPtr",this.hDC)
-            throw Exception("Could not release window device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not release window device context.")
     }
 
     Attach(Surface)
@@ -63,51 +63,58 @@ class Viewport
         this.PaintData.hMemoryDC := Surface.hMemoryDC
         this.Width := Surface.Width
         this.Height := Surface.Height
+        Return, this
     }
 
     Refresh(X = 0,Y = 0,W = 0,H = 0)
     {
         If (X < 0 || X > this.Width)
-            throw Exception("Invalid X-axis coordinate: " . X,-1)
+            throw Exception("INVALID_INPUT",A_ThisFunc,"Invalid X-axis coordinate: " . X)
         If (Y < 0 || Y > this.Height)
-            throw Exception("Invalid Y-axis coordinate: " . Y,-1)
+            throw Exception("INVALID_INPUT",A_ThisFunc,"Invalid Y-axis coordinate: " . Y)
         If (W < 0 || W > this.Width)
-            throw Exception("Invalid width: " . W,-1)
+            throw Exception("INVALID_INPUT",A_ThisFunc,"Invalid width: " . W)
         If (H < 0 || H > this.Height)
-            throw Exception("Invalid height: " . W,-1)
+            throw Exception("INVALID_INPUT",A_ThisFunc,"Invalid height: " . W)
 
         If W = 0
             W := this.Width
         If H = 0
             H := this.Height
 
+        ;flush the GDI drawing batch
         If !DllCall("GdiFlush")
-            throw Exception("Could not flush GDI drawing batch.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not flush GDI drawing batch.")
 
+        ;set up rectangle structure representing area to redraw
         VarSetCapacity(Rect,16)
         NumPut(X,Rect,0,"UInt")
         NumPut(Y,Rect,4,"UInt")
         NumPut(X + W,Rect,8,"UInt")
         NumPut(Y + H,Rect,12,"UInt")
 
+        ;trigger redrawing of the window
         If !DllCall("InvalidateRect","UPtr",this.hWindow,"UPtr",&Rect,"UInt",0)
-            throw Exception("Could not add rectangle to update region.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not add rectangle to update region.")
         If !DllCall("UpdateWindow","UPtr",this.hWindow)
-            throw Exception("Could not update window.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window.")
+
+        Return, this
     }
 
     PaintCallback(Message,wParam,lParam)
     {
         Critical
         PaintData := Object(A_EventInfo)
+        hWindow := this
 
         If Message = 0xF ;WM_PAINT
         {
             ;prepare window for painting
             VarSetCapacity(PaintStruct,A_PtrSize + 60)
-            hDC := DllCall("BeginPaint","UPtr",this,"UPtr",&PaintStruct,"UPtr")
+            hDC := DllCall("BeginPaint","UPtr",hWindow,"UPtr",&PaintStruct,"UPtr")
             If !hDC
-                throw Exception("Could not prepare window for painting.")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not prepare window for painting.")
 
             ;obtain dimensions of update region
             X := NumGet(PaintStruct,A_PtrSize + 4,"UInt")
@@ -117,14 +124,14 @@ class Viewport
 
             ;transfer bitmap from memory device context to window device context
             If PaintData.hMemoryDC && !DllCall("BitBlt","UPtr",hDC,"Int",X,"Int",Y,"Int",W,"Int",H,"UPtr",PaintData.hMemoryDC,"Int",X,"Int",Y,"UInt",0xCC0020) ;SRCCOPY
-                throw Exception("Could not transfer bitmap data from memory device context to window device context.")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not transfer bitmap data from memory device context to window device context.")
 
             ;finish painting window
-            DllCall("EndPaint","UPtr",this,"UPtr",&PaintStruct)
+            DllCall("EndPaint","UPtr",hWindow,"UPtr",&PaintStruct)
             Return, 0
         }
 
         ;call the original message handler
-        Return, DllCall("CallWindowProc","UPtr",PaintData.hPreviousCallback,"UPtr",this,"UInt",Message,"UInt",wParam,"UInt",lParam,"UPtr")
+        Return, DllCall("CallWindowProc","UPtr",PaintData.hPreviousCallback,"UPtr",hWindow,"UInt",Message,"UInt",wParam,"UInt",lParam,"UPtr")
     }
 }
