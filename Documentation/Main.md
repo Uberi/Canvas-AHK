@@ -6,9 +6,22 @@ Types
 -----
 
 ### Units
+Units represent distances and dimensions (positive or negative real number).
+
 ;wip: write about unit system and cartesian coordinate system
 
-### Color
+### Angles
+Angles are measured in degrees from the reference line, clockwise. The reference line is vertical and is directed towards the negative Y-axis:
+
+    A
+    |  B
+    | /
+    |/
+    C
+
+The reference line is AC, with the origin at C and directed towards A. Therefore, the angle is represented by ACB.
+
+### Colors
 Color references represent a specific color and transparency. They are written in hexadecimal ARGB format.
 
 Each byte of the four byte color reference forms a single component, and each component is between the range of 0x00 to 0xFF (0 to 255 in decimal):
