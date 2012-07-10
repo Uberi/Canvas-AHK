@@ -20,10 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;wip: documentation
+;wip: finish surface API as per http://msdn.microsoft.com/en-us/library/windows/desktop/ms534038(v=vs.85).aspx
+;wip: add pen capabilities mentioned here: http://flylib.com/books/en/2.72.1.38/1/
 ;wip: add hatch brush, texture brush, and linear/radial gradient brush capabilities to Brush class
 ;wip: use CachedBitmap for animations: http://msdn.microsoft.com/en-us/library/ms533975(v=vs.85).aspx
 ;wip: see methods here: http://www.w3schools.com/html5/html5_ref_canvas.asp
-;wip: use GDI+ units and automatically do scaling like in progressengine
+;wip: automatically scale surface to viewport
 
 #Warn All
 #Warn LocalSameAsGlobal, Off
@@ -48,14 +50,15 @@ s.FillRectangle(b,50,50,50,50)
 
 Gui, Show, w200 h200, Canvas Demo
 
-t := new Canvas.Pen(0xFF00FF00)
+t := new Canvas.Pen(0xFF00FF00,3)
 Return
 
 GuiClose:
 ExitApp
 
 Space::
-s.DrawEllipse(t,50,50,100,100)
+;s.DrawEllipse(t,50,50,100,100)
+s.DrawCurve(t,[[10,10],[50,10],[10,50]],True)
 v.Refresh()
 Return
 

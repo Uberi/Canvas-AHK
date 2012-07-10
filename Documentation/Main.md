@@ -85,6 +85,16 @@ Line join styles are one of the following values:
 | Bevel | Clips the intersection of the outer edges such that it forms a cut corner.                  |
 | Round | Fills the intersection of the outer edges with part of an ellipse.                          |
 
+### Canvas.Pen.Type
+Represents the current type of the pen (type style). Can be set to change the current type style. Type styles define the appearance of the pen, such as stippling/dashing. Defaults to "Solid" when the pen is created.
+
+| Style   | Effect                                                                      |
+|:--------|:----------------------------------------------------------------------------|
+| Solid   | Continuous, unbroken lines.                                                 |
+| Dash    | Longer line segments divided by shorter breaks at regular intervals.        |
+| Dot     | Dots spaced at regular short intervals along the line.                      |
+| DashDot | Alternation between longer line segments and dots at equal short intervals. |
+
 ### Canvas.Pen.StartCap
 Represents the start cap style of the pen (cap style). Can be set to change the current start cap style. Start cap styles define how the starting points of lines are displayed. Defaults to "Flat" when the pen is created.
 

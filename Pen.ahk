@@ -40,6 +40,7 @@ class Pen
         this.Color := Color
         this.Width := Width
         this.Join := "Miter"
+        this.Type := "Solid"
         this.StartCap := "Flat"
         this.EndCap := this.StartCap
     }
@@ -63,6 +64,10 @@ class Pen
         static JoinStyles := Object("Miter",0 ;LineJoin.LineJoinMiter
                                    ,"Bevel",1 ;LineJoin.LineJoinBevel
                                    ,"Round",2) ;LineJoin.LineJoinRound
+        static TypeStyles := Object("Solid",0 ;DashStyleSolid
+                                   ,"Dash",1 ;DashStyleDash
+                                   ,"Dot",2 ;DashStyleDot
+                                   ,"DashDot",3) ;DashStyleDashDot
         static CapStyles := Object("Flat",0 ;LineCap.LineCapFlat
                                   ,"Square",1 ;LineCap.LineCapSquare
                                   ,"Round",2 ;LineCap.LineCapRound
@@ -90,6 +95,14 @@ class Pen
             Result := DllCall("gdiplus\GdipSetPenLineJoin","UPtr",this.pPen,"UInt",JoinStyles[Value])
             If Result != 0 ;Status.Ok
                 throw Exception("Could not set pen join (GDI+ error " . Result . ").")
+        }
+        Else If (Key = "Type") ;set pen type
+        {
+            If !TypeStyles.HasKey(Value)
+                throw Exception("Invalid pen type: " . Value . ".")
+            Result := DllCall("gdiplus\GdipSetPenDashStyle","UPtr",this.pPen,"UInt",TypeStyles[Value])
+            If Result != 0 ;Status.Ok
+                throw Exception("Could not set type (GDI+ error " . Result . ").")
         }
         Else If (Key = "StartCap") ;set pen start cap
         {
