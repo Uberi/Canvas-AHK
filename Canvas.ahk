@@ -54,7 +54,7 @@ GuiClose:
 ExitApp
 
 Space::
-s.FillPie(t,)
+s.FillPie(b,100,100,50,50,0,270)
 v.Refresh()
 Return
 

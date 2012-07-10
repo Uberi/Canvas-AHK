@@ -207,7 +207,7 @@ class Surface
     {
         this.CheckSector(X,Y,W,H,Start,Sweep)
 
-        Result := DllCall("gdiplus\GdipFillPie","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
+        Result := DllCall("gdiplus\GdipFillPie","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
         If Result != 0 ;Status.Ok
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not fill pie (GDI+ error " . Result . ").")
         Return, this
