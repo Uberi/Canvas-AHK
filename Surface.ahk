@@ -28,6 +28,8 @@ class Surface
         If Height Is Not Integer
             throw Exception("INVALID_INPUT",-1,"Invalid height: " . Height)
 
+        ObjInsert(this,"",Object())
+
         this.Width := Width
         this.Height := Height
 
@@ -67,7 +69,42 @@ class Surface
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create graphics object from memory device context (GDI+ error " . Result . ").")
         this.pGraphics := pGraphics
 
-        ;wip: set smoothing mode
+        this.Interpolation := "None"
+        this.Smooth := "None"
+    }
+
+    __Get(Key)
+    {
+        If (Key != "")
+            Return, this[""][Key]
+    }
+
+    __Set(Key,Value)
+    {
+        static InterpolationStyles := Object("None",5 ;InterpolationMode.InterpolationModeNearestNeighbor
+                                            ,"Linear",6 ;InterpolationMode.InterpolationModeHighQualityBilinear
+                                            ,"Cubic",7) ;InterpolationMode.InterpolationModeHighQualityBicubic
+        static SmoothStyles := Object("None",3 ;SmoothingMode.SmoothingModeNone
+                                     ,"Low",4 ;SmoothingMode.SmoothingModeAntiAlias8x4
+                                     ,"High",5) ;SmoothingMode.SmoothingModeAntiAlias8x8
+        If (Key = "Interpolation")
+        {
+            If !InterpolationStyles.HasKey(Value)
+                throw Exception("INVALID_INPUT",-1,"Invalid interpolation mode: " . Value . ".")
+            Result := DllCall("gdiplus\GdipSetInterpolationMode","UPtr",this.pGraphics,"UInt",InterpolationStyles[Value])
+            If Result != 0 ;Status.Ok
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set interpolation mode (GDI+ error " . Result . ").")
+        }
+        Else If (Key = "Smooth")
+        {
+            If !SmoothStyles.HasKey(Value)
+                throw Exception("INVALID_INPUT",-1,"Invalid smooth mode: " . Value . ".")
+            Result := DllCall("gdiplus\GdipSetSmoothingMode","UPtr",this.pGraphics,"UInt",SmoothStyles[Value])
+            If Result != 0 ;Status.Ok
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set smooth mode (GDI+ error " . Result . ").")
+        }
+        this[""][Key] := Value
+        Return, Value
     }
 
     __Delete()
