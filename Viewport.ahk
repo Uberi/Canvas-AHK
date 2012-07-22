@@ -82,9 +82,10 @@ class Viewport
         If H = 0
             H := this.Height
 
-        ;flush the GDI drawing batch
-        If !DllCall("GdiFlush")
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not flush GDI drawing batch.")
+        ;flush the GDI+ drawing batch
+        Result := DllCall("gdiplus\GdipFlush","UInt",1) ;FlushIntention.FlushIntentionSync
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not flush GDI+ pending rendering operations (GDI+ error " . Result . ").")
 
         ;set up rectangle structure representing area to redraw
         VarSetCapacity(Rect,16)
