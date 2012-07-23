@@ -42,7 +42,7 @@ class Pen
         this.Join := "Miter"
         this.Type := "Solid"
         this.StartCap := "Flat"
-        this.EndCap := this.StartCap
+        this.EndCap := "Flat"
     }
 
     __Delete()

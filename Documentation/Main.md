@@ -74,6 +74,28 @@ Creates a surface object representing a set of graphics properties and data, hav
 
 Returns the surface object.
 
+### Canvas.Surface.Interpolation := "None"
+Represents the current interpolation mode of the surface (interpolation style). Interpolation modes define the appearance of surfaces when scaled.
+
+Interpolation styles are one of the following values:
+
+| Style  | Effect                                                                                                         |
+|:-------|:---------------------------------------------------------------------------------------------------------------|
+| None   | Pixels are sampled according to the nearest neighbor. Suitable for fast, low quality, or pixelated effects.    |
+| Linear | Pixels are linearly sampled across the source values. Suitable for medium quality and reasonably fast effects. |
+| Cubic  | Pixels are sampled according to a cubic spline. Suitable for high quality, slower effects.                     |
+
+### Canvas.Surface.Smooth := "None"
+Represents the current smooth mode of the surface (smooth style). Smooth modes define the appearance and antialiasing of objects drawn onto the surface.
+
+Smooth styles are one of the following values:
+
+| Style | Effect                                                                                          |
+|:------|:------------------------------------------------------------------------------------------------|
+| None  | Objects are not smoothed or antialiased. Suitable for fast, low quality, or pixelated effects.  |
+| Good  | Objects are smoothed and antialiased at medium quality. Suitable for reasonably fast effects.   |
+| Best  | Objects are smoothed and antialiased at high quality. Suitable for slower but smoother effects. |
+
 ### Canvas.Surface.Clear(Color = 0x00000000)
 Clears the entire surface to a color defined by _Color_ (color).
 
@@ -129,8 +151,8 @@ Represents the current color of the pen (color). Can be set to change the curren
 ### Canvas.Pen.Width
 Represents the current width of the pen (units). Can be set to change the current width.
 
-### Canvas.Pen.Join
-Represents the current join style of the pen (join style). Can be set to change the current join style. Join styles define how the points where lines join are displayed when drawing multiple connected lines. Defaults to "Miter" when the pen is created.
+### Canvas.Pen.Join := "Miter"
+Represents the current join style of the pen (join style). Can be set to change the current join style. Join styles define how the points where lines join are displayed when drawing multiple connected lines.
 
 Line join styles are one of the following values:
 
@@ -140,8 +162,8 @@ Line join styles are one of the following values:
 | Bevel | Clips the intersection of the outer edges such that it forms a cut corner.                  |
 | Round | Fills the intersection of the outer edges with part of an ellipse.                          |
 
-### Canvas.Pen.Type
-Represents the current type of the pen (type style). Can be set to change the current type style. Type styles define the appearance of the pen, such as stippling/dashing. Defaults to "Solid" when the pen is created.
+### Canvas.Pen.Type := "Solid"
+Represents the current type of the pen (type style). Can be set to change the current type style. Type styles define the appearance of the pen, such as stippling/dashing.
 
 | Style   | Effect                                                                      |
 |:--------|:----------------------------------------------------------------------------|
@@ -150,8 +172,8 @@ Represents the current type of the pen (type style). Can be set to change the cu
 | Dot     | Dots spaced at regular short intervals along the line.                      |
 | DashDot | Alternation between longer line segments and dots at equal short intervals. |
 
-### Canvas.Pen.StartCap
-Represents the start cap style of the pen (cap style). Can be set to change the current start cap style. Start cap styles define how the starting points of lines are displayed. Defaults to "Flat" when the pen is created.
+### Canvas.Pen.StartCap := "Flat"
+Represents the start cap style of the pen (cap style). Can be set to change the current start cap style. Start cap styles define how the starting points of lines are displayed.
 
 Cap styles are one of the following values:
 
@@ -162,10 +184,11 @@ Cap styles are one of the following values:
 | Round    | Round end with center of rounding at the point.         |
 | Triangle | Tapered protrusion at the point, aligned with the line. |
 
-### Canvas.Pen.EndCap
-Represents the end cap style of the pen (cap style). Can be set to change the current end cap style. End cap styles define how the ending points of lines are displayed. Defaults to "Flat" when the pen is created.
+### Canvas.Pen.EndCap := "Flat"
+Represents the end cap style of the pen (cap style). Can be set to change the current end cap style. End cap styles define how the ending points of lines are displayed.
 
 Brushes
 -------
 Brushes represent fill properties such as color or texture, and are used to fill the interior of shapes in graphics operations.
 
+;wip

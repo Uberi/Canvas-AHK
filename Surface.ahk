@@ -85,8 +85,8 @@ class Surface
                                             ,"Linear",6 ;InterpolationMode.InterpolationModeHighQualityBilinear
                                             ,"Cubic",7) ;InterpolationMode.InterpolationModeHighQualityBicubic
         static SmoothStyles := Object("None",3 ;SmoothingMode.SmoothingModeNone
-                                     ,"Low",4 ;SmoothingMode.SmoothingModeAntiAlias8x4
-                                     ,"High",5) ;SmoothingMode.SmoothingModeAntiAlias8x8
+                                     ,"Good",4 ;SmoothingMode.SmoothingModeAntiAlias8x4
+                                     ,"Best",5) ;SmoothingMode.SmoothingModeAntiAlias8x8
         If (Key = "Interpolation")
         {
             If !InterpolationStyles.HasKey(Value)
