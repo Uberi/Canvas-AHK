@@ -61,6 +61,7 @@ class Viewport
     Attach(Surface)
     {
         this.PaintData.hMemoryDC := Surface.hMemoryDC
+        this.pGraphics := Surface.pGraphics
         this.Width := Surface.Width
         this.Height := Surface.Height
         Return, this
@@ -83,7 +84,7 @@ class Viewport
             H := this.Height
 
         ;flush the GDI+ drawing batch
-        Result := DllCall("gdiplus\GdipFlush","UInt",1) ;FlushIntention.FlushIntentionSync
+        Result := DllCall("gdiplus\GdipFlush","UPtr",this.pGraphics,"UInt",1) ;FlushIntention.FlushIntentionSync
         If Result != 0 ;Status.Ok
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not flush GDI+ pending rendering operations (GDI+ error " . Result . ").")
 
