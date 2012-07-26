@@ -139,6 +139,7 @@ class Surface
 
     DrawLine(Pen,X,Y,W,H)
     {
+        this.CheckPen(Pen)
         this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"FLoat",Y,"Float",X + W,"Float",Y + H)
@@ -149,6 +150,7 @@ class Surface
 
     DrawLines(Pen,Points)
     {
+        this.CheckPen(Pen)
         Length := this.CheckPoints(Points,PointArray)
 
         Result := DllCall("gdiplus\GdipDrawLines","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
@@ -159,6 +161,7 @@ class Surface
 
     DrawArc(Pen,X,Y,W,H,Start,Sweep)
     {
+        this.CheckPen(Pen)
         this.CheckSector(X,Y,W,H,Start,Sweep)
 
         Result := DllCall("gdiplus\GdipDrawArc","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
@@ -169,6 +172,7 @@ class Surface
 
     DrawCurve(Pen,Points,Closed = False)
     {
+        this.CheckPen(Pen)
         Length := this.CheckPoints(Points,PointArray)
 
         If Closed
@@ -182,6 +186,7 @@ class Surface
 
     DrawEllipse(Pen,X,Y,W,H)
     {
+        this.CheckPen(Pen)
         this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipDrawEllipse","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
@@ -192,6 +197,7 @@ class Surface
 
     DrawPie(Pen,X,Y,W,H,Start,Sweep)
     {
+        this.CheckPen(Pen)
         this.CheckSector(X,Y,W,H,Start,Sweep)
 
         Result := DllCall("gdiplus\GdipDrawPie","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
@@ -202,6 +208,7 @@ class Surface
 
     DrawPolygon(Pen,Points)
     {
+        this.CheckPen(Pen)
         Length := this.CheckPoints(Points,PointArray)
 
         Result := DllCall("gdiplus\GdipDrawPolygon","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
@@ -212,6 +219,7 @@ class Surface
 
     DrawRectangle(Pen,X,Y,W,H)
     {
+        this.CheckPen(Pen)
         this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipDrawRectangle","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
@@ -222,6 +230,7 @@ class Surface
 
     FillCurve(Brush,Points)
     {
+        this.CheckBrush(Brush)
         Length := this.CheckPoints(Points,PointArray)
 
         Result := DllCall("gdiplus\GdipFillClosedCurve","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"UPtr",&PointArray,"Int",Length)
@@ -232,6 +241,7 @@ class Surface
 
     FillEllipse(Brush,X,Y,W,H)
     {
+        this.CheckBrush(Brush)
         this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipFillEllipse","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
@@ -242,6 +252,7 @@ class Surface
 
     FillPie(Brush,X,Y,W,H,Start,Sweep)
     {
+        this.CheckBrush(Brush)
         this.CheckSector(X,Y,W,H,Start,Sweep)
 
         Result := DllCall("gdiplus\GdipFillPie","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
@@ -252,6 +263,7 @@ class Surface
 
     FillPolygon(Brush,Points)
     {
+        this.CheckBrush(Brush)
         Length := this.CheckPoints(Points,PointArray)
 
         Result := DllCall("gdiplus\GdipFillPolygon","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"UPtr",&PointArray,"Int",Length)
@@ -262,6 +274,7 @@ class Surface
 
     FillRectangle(Brush,X,Y,W,H)
     {
+        this.CheckBrush(Brush)
         this.CheckRectangle(X,Y,W,H)
 
         Result := DllCall("gdiplus\GdipFillRectangle","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
@@ -270,52 +283,64 @@ class Surface
         Return, this
     }
 
+    CheckPen(Pen)
+    {
+        If !Pen.pPen
+            throw Exception("INVALID_INPUT",-2,"Invalid pen: " . Pen . ".")
+    }
+
+    CheckBrush(Brush)
+    {
+        If !Brush.pBrush
+            throw Exception("INVALID_INPUT",-2,"Invalid brush: " . Brush . ".")
+    }
+
     CheckSector(X,Y,W,H,Start,Sweep)
     {
         If X Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X)
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X . ".")
         If Y Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y)
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y . ".")
         If W < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W)
+            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W . ".")
         If H < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H)
+            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H . ".")
         If Start Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid start angle: " . Start)
+            throw Exception("INVALID_INPUT",-2,"Invalid start angle: " . Start . ".")
         If Sweep Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid sweep angle: " . Sweep)
+            throw Exception("INVALID_INPUT",-2,"Invalid sweep angle: " . Sweep . ".")
     }
 
     CheckRectangle(X,Y,W,H)
     {
         If X Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X)
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X . ".")
         If Y Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y)
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y . ".")
         If W < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W)
+            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W . ".")
         If H < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H)
+            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H . ".")
     }
 
     CheckPoints(Points,ByRef PointArray)
     {
         Length := Points.MaxIndex()
         If !Length
-            throw Exception("INVALID_INPUT",-2,"Invalid point set: " . Points)
+            throw Exception("INVALID_INPUT",-2,"Invalid point set: " . Points . ".")
         VarSetCapacity(PointArray,Length << 3)
         Offset := 0
         Loop, %Length%
         {
             Point := Points[A_Index]
             If !IsObject(Point)
-                throw Exception("INVALID_INPUT",-2,"Invalid point: " . Point)
+                throw Exception("INVALID_INPUT",-2,"Invalid point: " . Point . ".")
             PointX := Point[1]
             PointY := Point[2]
             If PointX Is Not Number
-                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX)
+                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX . ".")
             If PointY Is Not Number
-                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX)
+                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX . ".")
 
             NumPut(PointX,PointArray,Offset,"Float"), Offset += 4
             NumPut(PointY,PointArray,Offset,"Float"), Offset += 4

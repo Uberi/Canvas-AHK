@@ -51,7 +51,7 @@ class Viewport
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not release window device context.")
 
         ;free paint callback
-        DllCall("GlobalFree","UPtr",this.pCallback)
+        DllCall("GlobalFree","UPtr",this.pCallback,"UPtr")
     }
 
     Attach(Surface)
