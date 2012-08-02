@@ -137,18 +137,18 @@ class Surface
         Return, this
     }
 
-    DrawLine(Pen,X,Y,W,H)
+    Line(Pen,X1,Y1,X2,Y2)
     {
         this.CheckPen(Pen)
-        this.CheckRectangle(X,Y,W,H)
+        this.CheckLine(X1,Y1,X2,Y2)
 
-        Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"FLoat",Y,"Float",X + W,"Float",Y + H)
+        Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X1,"FLoat",Y1,"Float",X2,"Float",Y2)
         If Result != 0 ;Status.Ok
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw line (GDI+ error " . Result . ").")
         Return, this
     }
 
-    DrawLines(Pen,Points)
+    Lines(Pen,Points)
     {
         this.CheckPen(Pen)
         Length := this.CheckPoints(Points,PointArray)
@@ -295,6 +295,30 @@ class Surface
             throw Exception("INVALID_INPUT",-2,"Invalid brush: " . Brush . ".")
     }
 
+    CheckLine(X1,Y1,X2,Y2)
+    {
+        If X1 Is Not Number
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X1 . ".")
+        If Y1 Is Not Number
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y1 . ".")
+        If X2 Is Not Number
+            throw Exception("INVALID_INPUT",-2,"Invalid width: " . X2 . ".")
+        If Y2 Is Not Number
+            throw Exception("INVALID_INPUT",-2,"Invalid height: " . Y2 . ".")
+    }
+
+    CheckRectangle(X,Y,W,H)
+    {
+        If X Is Not Number
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X . ".")
+        If Y Is Not Number
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y . ".")
+        If W < 0
+            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W . ".")
+        If H < 0
+            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H . ".")
+    }
+
     CheckSector(X,Y,W,H,Start,Sweep)
     {
         If X Is Not Number
@@ -309,18 +333,6 @@ class Surface
             throw Exception("INVALID_INPUT",-2,"Invalid start angle: " . Start . ".")
         If Sweep Is Not Number
             throw Exception("INVALID_INPUT",-2,"Invalid sweep angle: " . Sweep . ".")
-    }
-
-    CheckRectangle(X,Y,W,H)
-    {
-        If X Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X . ".")
-        If Y Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y . ".")
-        If W < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W . ".")
-        If H < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H . ".")
     }
 
     CheckPoints(Points,ByRef PointArray)

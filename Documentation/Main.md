@@ -101,12 +101,12 @@ Clears the entire surface to a color defined by _Color_ (color).
 
 Returns the surface object.
 
-### Canvas.Surface.DrawLine(Pen,X,Y,W,H)
-Draws a single line with the pen _Pen_ (Pen), at the X-axis coordinate _X_ (units), Y-axis coordinate _Y_ (units), X-axis extent _W_ (positive or zero units), and Y-axis extent _H_ (positive or zero units).
+### Canvas.Surface.Line(Pen,X1,Y1,X2,Y2)
+Draws a single line with the pen _Pen_ (Pen), starting at the X-axis coordinate _X1_ (units) and Y-axis coordinate _Y1_ (units), ending at X-axis coordinate _X2_ (units) and Y-axis coordinate _Y2_ (units).
 
 Returns the surface object.
 
-### Canvas.Surface.DrawLines(Pen,Points)
+### Canvas.Surface.Lines(Pen,Points)
 ;wip
 
 ### Canvas.Surface.Width
