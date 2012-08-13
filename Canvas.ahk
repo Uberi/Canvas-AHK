@@ -19,6 +19,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+;wip: following does not allow closing:
+/*
+Gui, +LastFound +Resize
+v := new Canvas.Viewport(WinExist())
+Gui, Show, w200 h200
+Sleep, 1000000
+Return
+GuiClose:
+ExitApp
+*/
+;wip: split docs into separate files
 ;wip: combine the draw* and fill* functions: DrawPie(Pen) and FillPie(Brush) -> Pie(Pen) and Pie(Brush)
 ;wip: fold pens into brushes; allow brushes to define widths, fills, etc.
 ;wip: finish surface API as per http://msdn.microsoft.com/en-us/library/windows/desktop/ms534038(v=vs.85).aspx
@@ -27,23 +38,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;wip: see methods here: http://www.w3schools.com/html5/html5_ref_canvas.asp
 ;wip: automatically scale surface to viewport
 
+/*
 #Warn All
 #Warn LocalSameAsGlobal, Off
 
-Gui, +LastFound
-
 s := new Canvas.Surface(200,200)
 
+Gui, +LastFound
 v := new Canvas.Viewport(WinExist())
 v.Attach(s)
-
-s.Clear(0xFFFFFF00)
 
 p := new Canvas.Pen(0x80FF0000,10)
 t := new Canvas.Pen(0xFF00FF00,3)
 b := new Canvas.Brush(0xAA0000FF)
 
-s.FillRectangle(b,50,50,50,50)
+s.Clear(0xFFFFFF00)
+ .FillRectangle(b,50,50,50,50)
  .DrawEllipse(p,70,70,100,100)
  .DrawCurve(t,[[10,10],[50,10],[10,50]],True)
 
@@ -57,6 +67,7 @@ Space::
 s.FillPie(b,100,100,50,50,0,270)
 v.Refresh()
 Return
+*/
 
 class Canvas
 {
