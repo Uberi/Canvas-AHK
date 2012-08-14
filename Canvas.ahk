@@ -29,6 +29,7 @@ Return
 GuiClose:
 ExitApp
 */
+;wip: add function names to exceptions like in Surface.Push() and use this.CheckCall() to shorten code
 ;wip: split docs into separate files
 ;wip: combine the draw* and fill* functions: DrawPie(Pen) and FillPie(Brush) -> Pie(Pen) and Pie(Brush)
 ;wip: fold pens into brushes; allow brushes to define widths, fills, etc.
@@ -43,6 +44,7 @@ ExitApp
 #Warn LocalSameAsGlobal, Off
 
 s := new Canvas.Surface(200,200)
+s.Push()
 
 Gui, +LastFound
 v := new Canvas.Viewport(WinExist())
@@ -53,7 +55,11 @@ t := new Canvas.Pen(0xFF00FF00,3)
 b := new Canvas.Brush(0xAA0000FF)
 
 s.Clear(0xFFFFFF00)
- .FillRectangle(b,50,50,50,50)
+ .Push()
+ .Translate(50,50)
+ .Rotate(60)
+ .FillRectangle(b,0,0,50,50)
+ .Pop()
  .DrawEllipse(p,70,70,100,100)
  .DrawCurve(t,[[10,10],[50,10],[10,50]],True)
 

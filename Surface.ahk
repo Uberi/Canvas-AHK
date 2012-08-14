@@ -69,6 +69,8 @@ class Surface
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create graphics object from memory device context (GDI+ error " . Result . ").")
         this.pGraphics := pGraphics
 
+        this.Transforms := []
+
         this.Interpolation := "None"
         this.Smooth := "None"
     }
@@ -134,28 +136,6 @@ class Surface
         Result := DllCall("gdiplus\GdipGraphicsClear","UPtr",this.pGraphics,"UInt",Color)
         If Result != 0 ;Status.Ok
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not clear graphics (GDI+ error " . Result . ").")
-        Return, this
-    }
-
-    Line(Pen,X1,Y1,X2,Y2)
-    {
-        this.CheckPen(Pen)
-        this.CheckLine(X1,Y1,X2,Y2)
-
-        Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X1,"FLoat",Y1,"Float",X2,"Float",Y2)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw line (GDI+ error " . Result . ").")
-        Return, this
-    }
-
-    Lines(Pen,Points)
-    {
-        this.CheckPen(Pen)
-        Length := this.CheckPoints(Points,PointArray)
-
-        Result := DllCall("gdiplus\GdipDrawLines","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw lines (GDI+ error " . Result . ").")
         Return, this
     }
 
@@ -280,6 +260,125 @@ class Surface
         Result := DllCall("gdiplus\GdipFillRectangle","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
         If Result != 0 ;Status.Ok
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not fill rectangle (GDI+ error " . Result . ").")
+        Return, this
+    }
+
+    Line(Pen,X1,Y1,X2,Y2)
+    {
+        this.CheckPen(Pen)
+        this.CheckLine(X1,Y1,X2,Y2)
+
+        Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X1,"FLoat",Y1,"Float",X2,"Float",Y2)
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw line (GDI+ error " . Result . ").")
+        Return, this
+    }
+
+    Lines(Pen,Points)
+    {
+        this.CheckPen(Pen)
+        Length := this.CheckPoints(Points,PointArray)
+
+        Result := DllCall("gdiplus\GdipDrawLines","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw lines (GDI+ error " . Result . ").")
+        Return, this
+    }
+
+    Push()
+    {
+        ;create temporary matrix to hold elements
+        pMatrix := 0, Result := DllCall("gdiplus\GdipCreateMatrix","UPtr*",pMatrix)
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create matrix (GDI+ error " . Result . " in GdipCreateMatrix).")
+
+        ;obtain current transformation matrix
+        Result := DllCall("gdiplus\GdipGetWorldTransform","UPtr",this.pGraphics,"UPtr",pMatrix)
+        If Result != 0 ;Status.Ok
+        {
+            DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain transformation matrix (GDI+ error " . Result . " in GdipGetWorldTransform).")
+        }
+
+        ;push transformation matrix elements onto stack
+        Index := this.Transforms.MaxIndex()
+        If Index
+            Index ++
+        Else
+            Index := 1
+        this.Transforms.SetCapacity(Index,24)
+        Result := DllCall("gdiplus\GdipGetMatrixElements","UPtr",pMatrix,"UPtr",this.Transforms.GetAddress(Index)) ;obtain matrix elements
+        If Result != 0 ;Status.Ok
+        {
+            DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain matrix elements (GDI+ error " . Result . " in GdipGetMatrixElements).")
+        }
+
+        ;delete temporary matrix
+        Result := DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete matrix (GDI+ error " . Result . " in GdipDeleteMatrix).")
+
+        Return, this
+    }
+
+    Pop()
+    {
+        Index := this.Transforms.MaxIndex()
+        If !Index
+            throw Exception("INVALID_INPUT",-1,"No transformation stack entries to pop.")
+
+        ;create temporary matrix to hold elements
+        pElements := this.Transforms.GetAddress(Index)
+        pMatrix := 0, Result := DllCall("gdiplus\GdipCreateMatrix2"
+            ,"Float",NumGet(pElements + 0,0,"Float")
+            ,"Float",NumGet(pElements + 0,4,"Float")
+            ,"Float",NumGet(pElements + 0,8,"Float")
+            ,"Float",NumGet(pElements + 0,12,"Float")
+            ,"Float",NumGet(pElements + 0,16,"Float")
+            ,"Float",NumGet(pElements + 0,20,"Float")
+            ,"UPtr*",pMatrix)
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create matrix (GDI+ error " . Result . " in GdipCreateMatrix3).")
+
+        ;set the current transformation matrix
+        Result := DllCall("gdiplus\GdipSetWorldTransform","UPtr",this.pGraphics,"UPtr",pMatrix)
+        If Result != 0 ;Status.Ok
+        {
+            DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set transformation matrix (GDI+ error " . Result . " in GdipSetWorldTransform).")
+        }
+
+        ;delete temporary matrix
+        Result := DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete matrix (GDI+ error " . Result . " in GdipDeleteMatrix).")
+
+        this.Transforms.Remove(Index)
+        Return, this
+    }
+
+    Translate(X,Y)
+    {
+        Result := DllCall("gdiplus\GdipTranslateWorldTransform","UPtr",this.pGraphics,"Float",X,"Float",Y,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not apply translation matrix (GDI+ error " . Result . ").")
+        Return, this
+    }
+
+    Rotate(Angle)
+    {
+        Result := DllCall("gdiplus\GdipRotateWorldTransform","UPtr",this.pGraphics,"Float",Angle,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not apply rotation matrix (GDI+ error " . Result . ").")
+        Return, this
+    }
+
+    Scale(X,Y)
+    {
+        Result := DllCall("gdiplus\GdipScaleWorldTransform","UPtr",this.pGraphics,"Float",X,"Float",Y,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not apply scale matrix (GDI+ error " . Result . ").")
         Return, this
     }
 
