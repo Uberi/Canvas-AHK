@@ -65,6 +65,15 @@ Internal error exceptions represent errors in the operation of a function, such 
 
 This type of exception is defined by its message being the string "INTERNAL_ERROR" (Exception.Message). The function throwing the error will be the exception's routine (Exception.What). Detailed information about the error is available in the exception's extended information (Exception.Extra), but should be used only for debugging purposes.
 
+Canvas
+------
+The Canvas class is not to be instaniated and serves mainly to provide general initialization and cleanup functions, as well as to contain its submodules.
+
+### Canvas.Lenient()
+Disables most error checking routines in all submodules. This may improve performance somewhat, though invalid input or internal errors may not be detected.
+
+This setting applies globally to all Canvas-related objects in the program, and is recommended for use only if performance concerns outweigh reliability concerns.
+
 Surfaces
 --------
 Surfaces represent and allow the manipulation of graphics properties and data. This may include drawing, painting, and more.

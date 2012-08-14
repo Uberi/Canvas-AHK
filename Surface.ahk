@@ -78,7 +78,12 @@ class Surface
     __Get(Key)
     {
         If (Key != "")
-            Return, this[""][Key]
+        {
+            Source := this[""]
+            If Source.HasKey(Key)
+                Return, Source[Key]
+            throw Exception("INVALID_INPUT",-1,"Invalid key: " . Key)
+        }
     }
 
     __Set(Key,Value)
@@ -102,10 +107,6 @@ class Surface
                 throw Exception("INVALID_INPUT",-1,"Invalid smooth mode: " . Value)
             this.CheckStatus(DllCall("gdiplus\GdipSetSmoothingMode","UPtr",this.pGraphics,"UInt",SmoothStyles[Value])
                 ,"GdipSetSmoothingMode","Could not set smooth mode")
-        } ;wip: use setters and getters for transforms
-        Else If (Key = "Rotation")
-        {
-            
         }
         this[""][Key] := Value
         Return, Value
@@ -332,23 +333,27 @@ class Surface
 
     Translate(X,Y)
     {
+        this.CheckPoint(X,Y)
         Return, this.CheckStatus(DllCall("gdiplus\GdipTranslateWorldTransform","UPtr",this.pGraphics,"Float",X,"Float",Y,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
             ,"GdipTranslateWorldTransform","Could not apply translation matrix")
     }
 
     Rotate(Angle)
     {
+        If Angle Is Not Number
+            throw Exception("INVALID_INPUT",-1,"Invalid angle: " . Angle)
         Return, this.CheckStatus(DllCall("gdiplus\GdipRotateWorldTransform","UPtr",this.pGraphics,"Float",Angle,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
             ,"GdipRotateWorldTransform","Could not apply rotation matrix")
     }
 
     Scale(X,Y)
     {
+        this.CheckPoint(X,Y)
         Return, this.CheckStatus(DllCall("gdiplus\GdipScaleWorldTransform","UPtr",this.pGraphics,"Float",X,"Float",Y,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
             ,"GdipScaleWorldTransform","Could not apply scale matrix")
     }
 
-    StubCheckStatus(a,b,c) ;wip
+    StubCheckStatus(Result,Name,Message)
     {
         Return, this
     }
@@ -370,6 +375,10 @@ class Surface
     }
 
     StubCheckSector(X,Y,W,H,Start,Sweep)
+    {
+    }
+
+    StubCheckPoint(X,Y)
     {
     }
 
@@ -465,6 +474,14 @@ class Surface
             throw Exception("INVALID_INPUT",-2,"Invalid start angle: " . Start)
         If Sweep Is Not Number
             throw Exception("INVALID_INPUT",-2,"Invalid sweep angle: " . Sweep)
+    }
+
+    CheckPoint(X,Y)
+    {
+        If X Is Not Number
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X)
+        If Y Is Not Number
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y)
     }
 
     CheckPoints(Points,ByRef PointArray)

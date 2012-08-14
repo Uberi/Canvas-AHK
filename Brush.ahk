@@ -47,7 +47,12 @@ class Brush
     __Get(Key)
     {
         If (Key != "")
-            Return, this[""][Key]
+        {
+            Source := this[""]
+            If Source.HasKey(Key)
+                Return, Source[Key]
+            throw Exception("INVALID_INPUT",-1,"Invalid key: " . Key)
+        }
     }
 
     __Set(Key,Value)
