@@ -104,7 +104,7 @@ class Surface
             Result := DllCall("gdiplus\GdipSetSmoothingMode","UPtr",this.pGraphics,"UInt",SmoothStyles[Value])
             If Result != 0 ;Status.Ok
                 throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set smooth mode (GDI+ error " . Result . ").")
-        }
+        } ;wip: use setters and getters for transforms
         this[""][Key] := Value
         Return, Value
     }
@@ -133,10 +133,8 @@ class Surface
     {
         If Color Is Not Integer
             throw Exception("INVALID_INPUT",-1,"Invalid color: " . Color . ".")
-        Result := DllCall("gdiplus\GdipGraphicsClear","UPtr",this.pGraphics,"UInt",Color)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not clear graphics (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipGraphicsClear","UPtr",this.pGraphics,"UInt",Color)
+            ,"GdipGraphicsClear","Could not clear graphics")
     }
 
     DrawArc(Pen,X,Y,W,H,Start,Sweep)
@@ -144,145 +142,107 @@ class Surface
         this.CheckPen(Pen)
         this.CheckSector(X,Y,W,H,Start,Sweep)
 
-        Result := DllCall("gdiplus\GdipDrawArc","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw arc (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawArc","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
+            ,"GdipDrawArc","Could not draw arc")
     }
 
     DrawCurve(Pen,Points,Closed = False)
     {
         this.CheckPen(Pen)
         Length := this.CheckPoints(Points,PointArray)
-
         If Closed
-            Result := DllCall("gdiplus\GdipDrawClosedCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
-        Else
-            Result := DllCall("gdiplus\GdipDrawCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw curve (GDI+ error " . Result . ").")
-        Return, this
+            Return, this.CheckStatus(DllCall("gdiplus\GdipDrawClosedCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+                ,"GdipDrawClosedCurve","Could not draw curve")
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+            ,"GdipDrawCurve","Could not draw curve")
     }
 
     DrawEllipse(Pen,X,Y,W,H)
     {
         this.CheckPen(Pen)
         this.CheckRectangle(X,Y,W,H)
-
-        Result := DllCall("gdiplus\GdipDrawEllipse","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw ellipse (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawEllipse","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
+            ,"GdipDrawEllipse","Could not draw ellipse")
     }
 
     DrawPie(Pen,X,Y,W,H,Start,Sweep)
     {
         this.CheckPen(Pen)
         this.CheckSector(X,Y,W,H,Start,Sweep)
-
-        Result := DllCall("gdiplus\GdipDrawPie","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw pie (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawPie","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
+            ,"GdipDrawPie","Could not draw pie")
     }
 
     DrawPolygon(Pen,Points)
     {
         this.CheckPen(Pen)
         Length := this.CheckPoints(Points,PointArray)
-
-        Result := DllCall("gdiplus\GdipDrawPolygon","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw polygon (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawPolygon","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+            ,"GdipDrawPolygon","Could not draw polygon")
     }
 
     DrawRectangle(Pen,X,Y,W,H)
     {
         this.CheckPen(Pen)
         this.CheckRectangle(X,Y,W,H)
-
-        Result := DllCall("gdiplus\GdipDrawRectangle","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw rectangle (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawRectangle","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H)
+            ,"GdipDrawRectangle","Could not draw rectangle")
     }
 
     FillCurve(Brush,Points)
     {
         this.CheckBrush(Brush)
         Length := this.CheckPoints(Points,PointArray)
-
-        Result := DllCall("gdiplus\GdipFillClosedCurve","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"UPtr",&PointArray,"Int",Length)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not fill curve (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipFillClosedCurve","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"UPtr",&PointArray,"Int",Length)
+            ,"GdipFillClosedCurve","Could not fill curve")
     }
 
     FillEllipse(Brush,X,Y,W,H)
     {
         this.CheckBrush(Brush)
         this.CheckRectangle(X,Y,W,H)
-
-        Result := DllCall("gdiplus\GdipFillEllipse","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not fill ellipse (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipFillEllipse","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
+            ,"GdipFillEllipse","Could not fill ellipse")
     }
 
     FillPie(Brush,X,Y,W,H,Start,Sweep)
     {
         this.CheckBrush(Brush)
         this.CheckSector(X,Y,W,H,Start,Sweep)
-
-        Result := DllCall("gdiplus\GdipFillPie","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not fill pie (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipFillPie","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
+            ,"GdipFillPie","Could not fill pie")
     }
 
     FillPolygon(Brush,Points)
     {
         this.CheckBrush(Brush)
         Length := this.CheckPoints(Points,PointArray)
-
-        Result := DllCall("gdiplus\GdipFillPolygon","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"UPtr",&PointArray,"Int",Length)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not fill polygon (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipFillPolygon","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"UPtr",&PointArray,"Int",Length)
+            ,"GdipFillPolygon","Could not fill polygon")
     }
 
     FillRectangle(Brush,X,Y,W,H)
     {
         this.CheckBrush(Brush)
         this.CheckRectangle(X,Y,W,H)
-
-        Result := DllCall("gdiplus\GdipFillRectangle","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not fill rectangle (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipFillRectangle","UPtr",this.pGraphics,"UPtr",Brush.pBrush,"Float",X,"Float",Y,"Float",W,"Float",H)
+            ,"GdipFillRectangle","Could not fill rectangle")
     }
 
     Line(Pen,X1,Y1,X2,Y2)
     {
         this.CheckPen(Pen)
         this.CheckLine(X1,Y1,X2,Y2)
-
-        Result := DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X1,"FLoat",Y1,"Float",X2,"Float",Y2)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw line (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawLine","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X1,"FLoat",Y1,"Float",X2,"Float",Y2)
+            ,"GdipDrawLine","Could not draw line")
     }
 
     Lines(Pen,Points)
     {
         this.CheckPen(Pen)
         Length := this.CheckPoints(Points,PointArray)
-
-        Result := DllCall("gdiplus\GdipDrawLines","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not draw lines (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawLines","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
+            ,"GdipDrawLines","Could not draw lines")
     }
 
     Push()
@@ -360,25 +320,86 @@ class Surface
 
     Translate(X,Y)
     {
-        Result := DllCall("gdiplus\GdipTranslateWorldTransform","UPtr",this.pGraphics,"Float",X,"Float",Y,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not apply translation matrix (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipTranslateWorldTransform","UPtr",this.pGraphics,"Float",X,"Float",Y,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
+            ,"GdipTranslateWorldTransform","Could not apply translation matrix")
     }
 
     Rotate(Angle)
     {
-        Result := DllCall("gdiplus\GdipRotateWorldTransform","UPtr",this.pGraphics,"Float",Angle,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not apply rotation matrix (GDI+ error " . Result . ").")
-        Return, this
+        Return, this.CheckStatus(DllCall("gdiplus\GdipRotateWorldTransform","UPtr",this.pGraphics,"Float",Angle,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
+            ,"GdipRotateWorldTransform","Could not apply rotation matrix")
     }
 
     Scale(X,Y)
     {
-        Result := DllCall("gdiplus\GdipScaleWorldTransform","UPtr",this.pGraphics,"Float",X,"Float",Y,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
+        Return, this.CheckStatus(DllCall("gdiplus\GdipScaleWorldTransform","UPtr",this.pGraphics,"Float",X,"Float",Y,"UInt",0) ;MatrixOrder.MatrixOrderPrepend
+            ,"GdipScaleWorldTransform","Could not apply scale matrix")
+    }
+
+    StubCheckStatus(a,b,c) ;wip
+    {
+        Return, this
+    }
+
+    StubCheckPen(Pen)
+    {
+    }
+
+    StubCheckBrush(Brush)
+    {
+    }
+
+    StubCheckLine(X1,Y1,X2,Y2)
+    {
+    }
+
+    StubCheckRectangle(X,Y,W,H)
+    {
+    }
+
+    StubCheckSector(X,Y,W,H,Start,Sweep)
+    {
+    }
+
+    StubCheckPoints(Points,ByRef PointArray)
+    {
+        Length := Points.MaxIndex()
+        VarSetCapacity(PointArray,Length << 3)
+        Offset := 0
+        Loop, %Length%
+        {
+            Point := Points[A_Index]
+            NumPut(Point[1],PointArray,Offset,"Float"), Offset += 4
+            NumPut(Point[2],PointArray,Offset,"Float"), Offset += 4
+        }
+        Return, Length
+    }
+
+    CheckStatus(Result,Name,Message)
+    {
+        static StatusValues := ["Status.GenericError"
+                               ,"Status.InvalidParameter"
+                               ,"Status.OutOfMemory"
+                               ,"Status.ObjectBusy"
+                               ,"Status.InsufficientBuffer"
+                               ,"Status.NotImplemented"
+                               ,"Status.Win32Error"
+                               ,"Status.WrongState"
+                               ,"Status.Aborted"
+                               ,"Status.FileNotFound"
+                               ,"Status.ValueOverflow"
+                               ,"Status.AccessDenied"
+                               ,"Status.UnknownImageFormat"
+                               ,"Status.FontFamilyNotFound"
+                               ,"Status.FontStyleNotFound"
+                               ,"Status.NotTrueTypeFont"
+                               ,"Status.UnsupportedGdiplusVersion"
+                               ,"Status.GdiplusNotInitialized"
+                               ,"Status.PropertyNotFound"
+                               ,"Status.PropertyNotSupported"
+                               ,"Status.ProfileNotFound"]
         If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not apply scale matrix (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",-1,Message . " (GDI+ error " . StatusValues[Result] . " in " . Name . ")")
         Return, this
     }
 
