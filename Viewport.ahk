@@ -60,7 +60,7 @@ class Viewport
             ,"UPtr",this.hWindow ;window handle
             ,"UPtr",this.pCallback ;callback pointer
             ,"UPtr",this.hWindow ;subclass ID
-            ,"UPtr",Surface.pGraphics) ;arbitrary data to pass to this particular subclass callback and ID
+            ,"UPtr",Surface.hMemoryDC) ;arbitrary data to pass to this particular subclass callback and ID
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window subclass.")
         this.pGraphics := Surface.pGraphics
         this.Width := Surface.Width
