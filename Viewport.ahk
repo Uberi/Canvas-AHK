@@ -85,9 +85,8 @@ class Viewport
             H := this.Height
 
         ;flush the GDI+ drawing batch
-        Result := DllCall("gdiplus\GdipFlush","UPtr",this.pGraphics,"UInt",1) ;FlushIntention.FlushIntentionSync
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not flush GDI+ pending rendering operations (GDI+ error " . Result . " in GdipFlush)")
+        this.CheckStatus(DllCall("gdiplus\GdipFlush","UPtr",this.pGraphics,"UInt",1) ;FlushIntention.FlushIntentionSync
+            ,"GdipFlush","Could not flush GDI+ pending rendering operations")
 
         ;set up rectangle structure representing area to redraw
         VarSetCapacity(Rect,16)
@@ -130,5 +129,33 @@ class Viewport
         ;finish painting window
         DllCall("EndPaint","UPtr",hWindow,"UPtr",&PaintStruct)
         Return, 0
+    }
+
+    CheckStatus(Result,Name,Message)
+    {
+        static StatusValues := ["Status.GenericError"
+                               ,"Status.InvalidParameter"
+                               ,"Status.OutOfMemory"
+                               ,"Status.ObjectBusy"
+                               ,"Status.InsufficientBuffer"
+                               ,"Status.NotImplemented"
+                               ,"Status.Win32Error"
+                               ,"Status.WrongState"
+                               ,"Status.Aborted"
+                               ,"Status.FileNotFound"
+                               ,"Status.ValueOverflow"
+                               ,"Status.AccessDenied"
+                               ,"Status.UnknownImageFormat"
+                               ,"Status.FontFamilyNotFound"
+                               ,"Status.FontStyleNotFound"
+                               ,"Status.NotTrueTypeFont"
+                               ,"Status.UnsupportedGdiplusVersion"
+                               ,"Status.GdiplusNotInitialized"
+                               ,"Status.PropertyNotFound"
+                               ,"Status.PropertyNotSupported"
+                               ,"Status.ProfileNotFound"]
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",-1,Message . " (GDI+ error " . StatusValues[Result] . " in " . Name . ")")
+        Return, this
     }
 }

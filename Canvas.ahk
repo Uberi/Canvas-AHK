@@ -89,9 +89,9 @@ class Canvas
         NumPut(0,StartupInformation,4) ;debug callback (disabled)
         NumPut(0,StartupInformation,A_PtrSize + 4) ;suppress background thread (disabled)
         NumPut(0,StartupInformation,A_PtrSize + 8) ;suppress external image codecs (disabled)
-        Token := 0, Result := DllCall("gdiplus\GdiplusStartup","UPtr*",Token,"UPtr",&StartupInformation,"UPtr",0)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not initialize the GDI+ library (GDI+ error " . Result . " in GdiplusStartup)")
+        Token := 0
+        this.CheckStatus(DllCall("gdiplus\GdiplusStartup","UPtr*",Token,"UPtr",&StartupInformation,"UPtr",0)
+            ,"GdiplusStartup","Could not initialize GDI+ library")
         this.Token := Token
     }
 
@@ -105,4 +105,32 @@ class Canvas
     #Include Surface.ahk
     #Include Pen.ahk
     #Include Brush.ahk
+
+    CheckStatus(Result,Name,Message)
+    {
+        static StatusValues := ["Status.GenericError"
+                               ,"Status.InvalidParameter"
+                               ,"Status.OutOfMemory"
+                               ,"Status.ObjectBusy"
+                               ,"Status.InsufficientBuffer"
+                               ,"Status.NotImplemented"
+                               ,"Status.Win32Error"
+                               ,"Status.WrongState"
+                               ,"Status.Aborted"
+                               ,"Status.FileNotFound"
+                               ,"Status.ValueOverflow"
+                               ,"Status.AccessDenied"
+                               ,"Status.UnknownImageFormat"
+                               ,"Status.FontFamilyNotFound"
+                               ,"Status.FontStyleNotFound"
+                               ,"Status.NotTrueTypeFont"
+                               ,"Status.UnsupportedGdiplusVersion"
+                               ,"Status.GdiplusNotInitialized"
+                               ,"Status.PropertyNotFound"
+                               ,"Status.PropertyNotSupported"
+                               ,"Status.ProfileNotFound"]
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",-1,Message . " (GDI+ error " . StatusValues[Result] . " in " . Name . ")")
+        Return, this
+    }
 }

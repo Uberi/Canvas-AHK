@@ -64,9 +64,9 @@ class Surface
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not select bitmap into memory device context (error in SelectObject)")
 
         ;create a graphics object
-        pGraphics := 0, Result := DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hMemoryDC,"UPtr*",pGraphics)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create graphics object from memory device context (GDI+ error " . Result . " in GdipCreateFromHDC)")
+        pGraphics := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hMemoryDC,"UPtr*",pGraphics)
+            ,"GdipCreateFromHDC","Could not create graphics object")
         this.pGraphics := pGraphics
 
         this.Transforms := []
@@ -93,18 +93,20 @@ class Surface
         {
             If !InterpolationStyles.HasKey(Value)
                 throw Exception("INVALID_INPUT",-1,"Invalid interpolation mode: " . Value)
-            Result := DllCall("gdiplus\GdipSetInterpolationMode","UPtr",this.pGraphics,"UInt",InterpolationStyles[Value])
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set interpolation mode (GDI+ error " . Result . " in GdipSetInterpolationMode)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetInterpolationMode","UPtr",this.pGraphics,"UInt",InterpolationStyles[Value])
+                ,"GdipSetInterpolationMode","Could not set interpolation mode")
         }
         Else If (Key = "Smooth")
         {
             If !SmoothStyles.HasKey(Value)
                 throw Exception("INVALID_INPUT",-1,"Invalid smooth mode: " . Value)
-            Result := DllCall("gdiplus\GdipSetSmoothingMode","UPtr",this.pGraphics,"UInt",SmoothStyles[Value])
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set smooth mode (GDI+ error " . Result . " in GdipSetSmoothingMode)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetSmoothingMode","UPtr",this.pGraphics,"UInt",SmoothStyles[Value])
+                ,"GdipSetSmoothingMode","Could not set smooth mode")
         } ;wip: use setters and getters for transforms
+        Else If (Key = "Rotation")
+        {
+            
+        }
         this[""][Key] := Value
         Return, Value
     }
@@ -113,16 +115,28 @@ class Surface
     {
         ;delete the graphics object
         Result := DllCall("gdiplus\GdipDeleteGraphics","UPtr",this.pGraphics)
-        If (Result != 0 && !e) ;Status.Ok
-            e := Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete graphics object (GDI+ error " . Result . " in GdipDeleteGraphics)")
+        If Result != 0 ;Status.Ok
+        {
+            DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hOriginalBitmap,"UPtr") ;deselect the bitmap if present
+            DllCall("DeleteObject","UPtr",this.hBitmap) ;delete the bitmap
+            DllCall("DeleteDC","UPtr",this.hMemoryDC) ;delete the memory device context
+            this.CheckStatus(Result,"GdipDeleteGraphics","Could not delete graphics object")
+        }
 
         ;deselect the bitmap if present
         If !DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hOriginalBitmap,"UPtr")
+        {
+            DllCall("DeleteObject","UPtr",this.hBitmap) ;delete the bitmap
+            DllCall("DeleteDC","UPtr",this.hMemoryDC) ;delete the memory device context
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not deselect bitmap from memory device context (error in SelectObject)")
+        }
 
         ;delete the bitmap
         If !DllCall("DeleteObject","UPtr",this.hBitmap)
+        {
+            DllCall("DeleteDC","UPtr",this.hMemoryDC) ;delete the memory device context
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete bitmap (error in DeleteObject)")
+        }
 
         ;delete the memory device context
         If !DllCall("DeleteDC","UPtr",this.hMemoryDC)
@@ -248,16 +262,16 @@ class Surface
     Push()
     {
         ;create temporary matrix to hold elements
-        pMatrix := 0, Result := DllCall("gdiplus\GdipCreateMatrix","UPtr*",pMatrix)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create matrix (GDI+ error " . Result . " in GdipCreateMatrix)")
+        pMatrix := 0
+        this.CheckStatus(Result := DllCall("gdiplus\GdipCreateMatrix","UPtr*",pMatrix)
+            ,"GdipCreateMatrix","Could not create matrix")
 
         ;obtain current transformation matrix
         Result := DllCall("gdiplus\GdipGetWorldTransform","UPtr",this.pGraphics,"UPtr",pMatrix)
         If Result != 0 ;Status.Ok
         {
             DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain transformation matrix (GDI+ error " . Result . " in GdipGetWorldTransform)")
+            this.CheckStatus(Result,"GdipGetWorldTransform","Could not obtain transformation matrix")
         }
 
         ;push transformation matrix elements onto stack
@@ -271,13 +285,12 @@ class Surface
         If Result != 0 ;Status.Ok
         {
             DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain matrix elements (GDI+ error " . Result . " in GdipGetMatrixElements)")
+            this.CheckStatus(Result,"GdipGetMatrixElements","Could not obtain matrix elements")
         }
 
         ;delete temporary matrix
-        Result := DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete matrix (GDI+ error " . Result . " in GdipDeleteMatrix)")
+        this.CheckStatus(DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
+            ,"GdipDeleteMatrix","Could not delete matrix")
 
         Return, this
     }
@@ -290,7 +303,8 @@ class Surface
 
         ;create temporary matrix to hold elements
         pElements := this.Transforms.GetAddress(Index)
-        pMatrix := 0, Result := DllCall("gdiplus\GdipCreateMatrix2"
+        pMatrix := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateMatrix2"
             ,"Float",NumGet(pElements + 0,0,"Float")
             ,"Float",NumGet(pElements + 0,4,"Float")
             ,"Float",NumGet(pElements + 0,8,"Float")
@@ -298,21 +312,19 @@ class Surface
             ,"Float",NumGet(pElements + 0,16,"Float")
             ,"Float",NumGet(pElements + 0,20,"Float")
             ,"UPtr*",pMatrix)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create matrix (GDI+ error " . Result . " in GdipCreateMatrix3)")
+            ,"GdipCreateMatrix2","Could not create matrix")
 
         ;set the current transformation matrix
         Result := DllCall("gdiplus\GdipSetWorldTransform","UPtr",this.pGraphics,"UPtr",pMatrix)
         If Result != 0 ;Status.Ok
         {
             DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set transformation matrix (GDI+ error " . Result . " in GdipSetWorldTransform)")
+            this.CheckStatus(Result,"GdipSetWorldTransform","Could not set transformation matrix")
         }
 
         ;delete temporary matrix
-        Result := DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete matrix (GDI+ error " . Result . " in GdipDeleteMatrix)")
+        this.CheckStatus(DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
+            ,"GdipDeleteMatrix","Could not delete matrix")
 
         this.Transforms.Remove(Index)
         Return, this

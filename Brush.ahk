@@ -29,9 +29,9 @@ class Brush
         ObjInsert(this,"",Object())
 
         ;create the brush
-        pBrush := 0, Result := DllCall("gdiplus\GdipCreateSolidFill","UInt",Color,"UPtr*",pBrush)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create brush (GDI+ error " . Result . " in GdipCreateSolidFill)")
+        pBrush := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateSolidFill","UInt",Color,"UPtr*",pBrush)
+            ,"GdipCreateSolidFill","Could not create brush")
         this.pBrush := pBrush
 
         this.Color := Color
@@ -40,9 +40,8 @@ class Brush
     __Delete()
     {
         ;delete the brush
-        Result := DllCall("gdiplus\GdipDeleteBrush","UPtr",this.pPen)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete brush (GDI+ error " . Result . " in GdipDeleteBrush)")
+        this.CheckStatus(DllCall("gdiplus\GdipDeleteBrush","UPtr",this.pPen)
+            ,"GdipDeleteBrush","Could not delete brush")
     }
 
     __Get(Key)
@@ -57,11 +56,38 @@ class Brush
         {
             If Value Is Not Integer
                 throw Exception("INVALID_INPUT",-1,"Invalid color: " . Value)
-            Result := DllCall("gdiplus\GdipSetSolidFillColor","UPtr",this.pBrush,"UInt",Value)
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set brush color (GDI+ error " . Result . " in GdipSetSolidFillColor)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetSolidFillColor","UPtr",this.pBrush,"UInt",Value)
+                ,"GdipSetSolidFillColor","Could not set brush color")
         }
         this[""][Key] := Value
         Return, Value
+    }
+
+    CheckStatus(Result,Name,Message)
+    {
+        static StatusValues := ["Status.GenericError"
+                               ,"Status.InvalidParameter"
+                               ,"Status.OutOfMemory"
+                               ,"Status.ObjectBusy"
+                               ,"Status.InsufficientBuffer"
+                               ,"Status.NotImplemented"
+                               ,"Status.Win32Error"
+                               ,"Status.WrongState"
+                               ,"Status.Aborted"
+                               ,"Status.FileNotFound"
+                               ,"Status.ValueOverflow"
+                               ,"Status.AccessDenied"
+                               ,"Status.UnknownImageFormat"
+                               ,"Status.FontFamilyNotFound"
+                               ,"Status.FontStyleNotFound"
+                               ,"Status.NotTrueTypeFont"
+                               ,"Status.UnsupportedGdiplusVersion"
+                               ,"Status.GdiplusNotInitialized"
+                               ,"Status.PropertyNotFound"
+                               ,"Status.PropertyNotSupported"
+                               ,"Status.ProfileNotFound"]
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",-1,Message . " (GDI+ error " . StatusValues[Result] . " in " . Name . ")")
+        Return, this
     }
 }

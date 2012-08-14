@@ -31,9 +31,9 @@ class Pen
         ObjInsert(this,"",Object())
 
         ;create the pen
-        pPen := 0, Result := DllCall("gdiplus\GdipCreatePen1","UInt",Color,"Float",Width,"UInt",2,"UPtr*",pPen) ;Unit.UnitPixel
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create pen (GDI+ error " . Result . " in GdipCreatePen1)")
+        pPen := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreatePen1","UInt",Color,"Float",Width,"UInt",2,"UPtr*",pPen) ;Unit.UnitPixel
+            ,"GdipCreatePen1","Could not create pen")
         this.pPen := pPen
 
         ;set properties
@@ -48,9 +48,8 @@ class Pen
     __Delete()
     {
         ;delete the pen
-        Result := DllCall("gdiplus\GdipDeletePen","UPtr",this.pPen)
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete pen (GDI+ error " . Result . " in GdipDeletePen)")
+        this.CheckStatus(DllCall("gdiplus\GdipDeletePen","UPtr",this.pPen)
+            ,"GdipDeletePen","Could not delete pen")
     }
 
     __Get(Key)
@@ -76,51 +75,73 @@ class Pen
         {
             If Value Is Not Integer
                 throw Exception("INVALID_INPUT",-1,"Invalid color: " . Value)
-            Result := DllCall("gdiplus\GdipSetPenColor","UPtr",this.pPen,"UInt",Value)
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen color (GDI+ error " . Result . " in GdipSetPenColor)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetPenColor","UPtr",this.pPen,"UInt",Value)
+                ,"GdipSetPenColor","Could not set pen color")
         }
         Else If (Key = "Width") ;set pen width
         {
             If Value Is Not Number
                 throw Exception("INVALID_INPUT",-1,"Invalid width: " . Value)
-            Result := DllCall("gdiplus\GdipSetPenWidth","UPtr",this.pPen,"Float",Value)
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen width (GDI+ error " . Result . " in GdipSetPenWidth)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetPenWidth","UPtr",this.pPen,"Float",Value)
+                ,"GdipSetPenWidth","Could not set pen width")
         }
         Else If (Key = "Join") ;set pen line join style
         {
             If !JoinStyles.HasKey(Value)
                 throw Exception("INVALID_INPUT",-1,"Invalid pen join: " . Value)
-            Result := DllCall("gdiplus\GdipSetPenLineJoin","UPtr",this.pPen,"UInt",JoinStyles[Value])
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen join (GDI+ error " . Result . " in GdipSetPenLineJoin)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetPenLineJoin","UPtr",this.pPen,"UInt",JoinStyles[Value])
+                ,"GdipSetPenLineJoin","Could not set pen join")
         }
         Else If (Key = "Type") ;set pen type
         {
             If !TypeStyles.HasKey(Value)
                 throw Exception("INVALID_INPUT",-1,"Invalid pen type: " . Value)
-            Result := DllCall("gdiplus\GdipSetPenDashStyle","UPtr",this.pPen,"UInt",TypeStyles[Value])
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set type (GDI+ error " . Result . " in GdipSetPenDashStyle)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetPenDashStyle","UPtr",this.pPen,"UInt",TypeStyles[Value])
+                ,"GdipSetPenDashStyle","Could not set pen type")
         }
         Else If (Key = "StartCap") ;set pen start cap
         {
             If !CapStyles.HasKey(Value)
                 throw Exception("INVALID_INPUT",-1,"Invalid pen start cap: " . Value)
-            Result := DllCall("gdiplus\GdipSetPenStartCap","UPtr",this.pPen,"UInt",CapStyles[Value])
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen start cap (GDI+ error " . Result . " in GdipSetPenStartCap)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetPenStartCap","UPtr",this.pPen,"UInt",CapStyles[Value])
+                ,"GdipSetPenStartCap","Could not set pen start cap")
         }
         Else If (Key = "EndCap") ;set pen end cap
         {
             If !CapStyles.HasKey(Value)
                 throw Exception("INVALID_INPUT",-1,"Invalid pen end cap: " . Value)
-            Result := DllCall("gdiplus\GdipSetPenStartCap","UPtr",this.pPen,"UInt",CapStyles[Value])
-            If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set pen end cap (GDI+ error " . Result . " in GdipSetPenEndCap)")
+            this.CheckStatus(DllCall("gdiplus\GdipSetPenEndCap","UPtr",this.pPen,"UInt",CapStyles[Value])
+                ,"GdipSetPenEndCap","Could not set pen end cap")
         }
         this[""][Key] := Value
         Return, Value
+    }
+
+    CheckStatus(Result,Name,Message)
+    {
+        static StatusValues := ["Status.GenericError"
+                               ,"Status.InvalidParameter"
+                               ,"Status.OutOfMemory"
+                               ,"Status.ObjectBusy"
+                               ,"Status.InsufficientBuffer"
+                               ,"Status.NotImplemented"
+                               ,"Status.Win32Error"
+                               ,"Status.WrongState"
+                               ,"Status.Aborted"
+                               ,"Status.FileNotFound"
+                               ,"Status.ValueOverflow"
+                               ,"Status.AccessDenied"
+                               ,"Status.UnknownImageFormat"
+                               ,"Status.FontFamilyNotFound"
+                               ,"Status.FontStyleNotFound"
+                               ,"Status.NotTrueTypeFont"
+                               ,"Status.UnsupportedGdiplusVersion"
+                               ,"Status.GdiplusNotInitialized"
+                               ,"Status.PropertyNotFound"
+                               ,"Status.PropertyNotSupported"
+                               ,"Status.ProfileNotFound"]
+        If Result != 0 ;Status.Ok
+            throw Exception("INTERNAL_ERROR",-1,Message . " (GDI+ error " . StatusValues[Result] . " in " . Name . ")")
+        Return, this
     }
 }
