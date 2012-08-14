@@ -91,7 +91,7 @@ class Canvas
         NumPut(0,StartupInformation,A_PtrSize + 8) ;suppress external image codecs (disabled)
         Token := 0, Result := DllCall("gdiplus\GdiplusStartup","UPtr*",Token,"UPtr",&StartupInformation,"UPtr",0)
         If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not initialize the GDI+ library (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not initialize the GDI+ library (GDI+ error " . Result . " in GdiplusStartup)")
         this.Token := Token
     }
 

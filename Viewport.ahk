@@ -28,7 +28,7 @@ class Viewport
         ;obtain a handle to the window device context
         this.hDC := DllCall("GetDC","UPtr",hWindow,"UPtr")
         If !this.hDC
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain window device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain window device context (error in GetDC)")
 
         ;subclass window to override WM_PAINT
         this.pCallback := RegisterCallback(this.PaintCallback,"Fast",6)
@@ -37,18 +37,18 @@ class Viewport
             ,"UPtr",this.pCallback ;callback pointer
             ,"UPtr",hWindow ;subclass ID
             ,"UPtr",0) ;arbitrary data to pass to this particular subclass callback and ID
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not subclass window.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not subclass window (error in SetWindowSubclass)")
     }
 
     __Delete()
     {
         ;remove subclass of window
         If !DllCall("Comctl32\RemoveWindowSubclass","UPtr",this.hWindow,"UPtr",this.pCallback,"UPtr",this.hWindow)
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not remove subclass from window.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not remove subclass from window (error in RemoveWindowSubclass)")
 
         ;release the window device context
         If !DllCall("ReleaseDC","UPtr",this.hWindow,"UPtr",this.hDC)
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not release window device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not release window device context (error in ReleaseDC)")
 
         ;free paint callback
         DllCall("GlobalFree","UPtr",this.pCallback,"UPtr")
@@ -61,7 +61,7 @@ class Viewport
             ,"UPtr",this.pCallback ;callback pointer
             ,"UPtr",this.hWindow ;subclass ID
             ,"UPtr",Surface.hMemoryDC) ;arbitrary data to pass to this particular subclass callback and ID
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window subclass.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window subclass (error in SetWindowSubclass)")
         this.pGraphics := Surface.pGraphics
         this.Width := Surface.Width
         this.Height := Surface.Height
@@ -87,7 +87,7 @@ class Viewport
         ;flush the GDI+ drawing batch
         Result := DllCall("gdiplus\GdipFlush","UPtr",this.pGraphics,"UInt",1) ;FlushIntention.FlushIntentionSync
         If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not flush GDI+ pending rendering operations (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not flush GDI+ pending rendering operations (GDI+ error " . Result . " in GdipFlush)")
 
         ;set up rectangle structure representing area to redraw
         VarSetCapacity(Rect,16)
@@ -98,9 +98,9 @@ class Viewport
 
         ;trigger redrawing of the window
         If !DllCall("InvalidateRect","UPtr",this.hWindow,"UPtr",&Rect,"UInt",0)
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not add rectangle to update region.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not add rectangle to update region (error in InvalidateRect)")
         If !DllCall("UpdateWindow","UPtr",this.hWindow)
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window (error in UpdateWindow)")
 
         Return, this
     }
@@ -115,7 +115,7 @@ class Viewport
         VarSetCapacity(PaintStruct,A_PtrSize + 60)
         hDC := DllCall("BeginPaint","UPtr",hWindow,"UPtr",&PaintStruct,"UPtr")
         If !hDC
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not prepare window for painting.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not prepare window for painting (error in BeginPaint)")
 
         ;obtain dimensions of update region
         X := NumGet(PaintStruct,A_PtrSize + 4,"UInt")
@@ -125,7 +125,7 @@ class Viewport
 
         ;transfer bitmap from memory device context to window device context
         If hMemoryDC && !DllCall("BitBlt","UPtr",hDC,"Int",X,"Int",Y,"Int",W,"Int",H,"UPtr",hMemoryDC,"Int",X,"Int",Y,"UInt",0xCC0020) ;SRCCOPY
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not transfer bitmap data from memory device context to window device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not transfer bitmap data from memory device context to window device context (error in BitBlt)")
 
         ;finish painting window
         DllCall("EndPaint","UPtr",hWindow,"UPtr",&PaintStruct)

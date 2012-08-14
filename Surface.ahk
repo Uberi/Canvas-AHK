@@ -36,7 +36,7 @@ class Surface
         ;create a memory device context for double buffering use
         this.hMemoryDC := DllCall("CreateCompatibleDC","UPtr",0,"UPtr")
         If !this.hMemoryDC
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create memory device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create memory device context (error in CreateCompatibleDC)")
 
         ;set up BITMAPINFO structure
         VarSetCapacity(BitmapInfo,40)
@@ -56,17 +56,17 @@ class Surface
         pBits := 0
         this.hBitmap := DllCall("CreateDIBSection","UPtr",0,"UPtr",&BitmapInfo,"UInt",0,"UPtr*",pBits,"UPtr",0,"UInt",0) ;DIB_RGB_COLORS
         If !this.hBitmap
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create bitmap.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create bitmap (error in CreateDIBSection)")
 
         ;select the bitmap into the memory device context
         this.hOriginalBitmap := DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hBitmap,"UPtr")
         If !this.hOriginalBitmap
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not select bitmap into memory device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not select bitmap into memory device context (error in SelectObject)")
 
         ;create a graphics object
         pGraphics := 0, Result := DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hMemoryDC,"UPtr*",pGraphics)
         If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create graphics object from memory device context (GDI+ error " . Result . ").")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create graphics object from memory device context (GDI+ error " . Result . " in GdipCreateFromHDC)")
         this.pGraphics := pGraphics
 
         this.Transforms := []
@@ -92,18 +92,18 @@ class Surface
         If (Key = "Interpolation")
         {
             If !InterpolationStyles.HasKey(Value)
-                throw Exception("INVALID_INPUT",-1,"Invalid interpolation mode: " . Value . ".")
+                throw Exception("INVALID_INPUT",-1,"Invalid interpolation mode: " . Value)
             Result := DllCall("gdiplus\GdipSetInterpolationMode","UPtr",this.pGraphics,"UInt",InterpolationStyles[Value])
             If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set interpolation mode (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set interpolation mode (GDI+ error " . Result . " in GdipSetInterpolationMode)")
         }
         Else If (Key = "Smooth")
         {
             If !SmoothStyles.HasKey(Value)
-                throw Exception("INVALID_INPUT",-1,"Invalid smooth mode: " . Value . ".")
+                throw Exception("INVALID_INPUT",-1,"Invalid smooth mode: " . Value)
             Result := DllCall("gdiplus\GdipSetSmoothingMode","UPtr",this.pGraphics,"UInt",SmoothStyles[Value])
             If Result != 0 ;Status.Ok
-                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set smooth mode (GDI+ error " . Result . ").")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set smooth mode (GDI+ error " . Result . " in GdipSetSmoothingMode)")
         } ;wip: use setters and getters for transforms
         this[""][Key] := Value
         Return, Value
@@ -114,25 +114,25 @@ class Surface
         ;delete the graphics object
         Result := DllCall("gdiplus\GdipDeleteGraphics","UPtr",this.pGraphics)
         If (Result != 0 && !e) ;Status.Ok
-            e := Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete graphics object (GDI+ error " . Result . ").")
+            e := Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete graphics object (GDI+ error " . Result . " in GdipDeleteGraphics)")
 
         ;deselect the bitmap if present
         If !DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hOriginalBitmap,"UPtr")
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not deselect bitmap from memory device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not deselect bitmap from memory device context (error in SelectObject)")
 
         ;delete the bitmap
         If !DllCall("DeleteObject","UPtr",this.hBitmap)
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete bitmap.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete bitmap (error in DeleteObject)")
 
         ;delete the memory device context
         If !DllCall("DeleteDC","UPtr",this.hMemoryDC)
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete memory device context.")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete memory device context (error in DeleteDC)")
     }
 
     Clear(Color = 0x00000000)
     {
         If Color Is Not Integer
-            throw Exception("INVALID_INPUT",-1,"Invalid color: " . Color . ".")
+            throw Exception("INVALID_INPUT",-1,"Invalid color: " . Color)
         Return, this.CheckStatus(DllCall("gdiplus\GdipGraphicsClear","UPtr",this.pGraphics,"UInt",Color)
             ,"GdipGraphicsClear","Could not clear graphics")
     }
@@ -250,14 +250,14 @@ class Surface
         ;create temporary matrix to hold elements
         pMatrix := 0, Result := DllCall("gdiplus\GdipCreateMatrix","UPtr*",pMatrix)
         If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create matrix (GDI+ error " . Result . " in GdipCreateMatrix).")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create matrix (GDI+ error " . Result . " in GdipCreateMatrix)")
 
         ;obtain current transformation matrix
         Result := DllCall("gdiplus\GdipGetWorldTransform","UPtr",this.pGraphics,"UPtr",pMatrix)
         If Result != 0 ;Status.Ok
         {
             DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain transformation matrix (GDI+ error " . Result . " in GdipGetWorldTransform).")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain transformation matrix (GDI+ error " . Result . " in GdipGetWorldTransform)")
         }
 
         ;push transformation matrix elements onto stack
@@ -271,13 +271,13 @@ class Surface
         If Result != 0 ;Status.Ok
         {
             DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain matrix elements (GDI+ error " . Result . " in GdipGetMatrixElements).")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain matrix elements (GDI+ error " . Result . " in GdipGetMatrixElements)")
         }
 
         ;delete temporary matrix
         Result := DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
         If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete matrix (GDI+ error " . Result . " in GdipDeleteMatrix).")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete matrix (GDI+ error " . Result . " in GdipDeleteMatrix)")
 
         Return, this
     }
@@ -286,7 +286,7 @@ class Surface
     {
         Index := this.Transforms.MaxIndex()
         If !Index
-            throw Exception("INVALID_INPUT",-1,"No transformation stack entries to pop.")
+            throw Exception("INVALID_INPUT",-1,"Invalid transformation stack entries")
 
         ;create temporary matrix to hold elements
         pElements := this.Transforms.GetAddress(Index)
@@ -299,20 +299,20 @@ class Surface
             ,"Float",NumGet(pElements + 0,20,"Float")
             ,"UPtr*",pMatrix)
         If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create matrix (GDI+ error " . Result . " in GdipCreateMatrix3).")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create matrix (GDI+ error " . Result . " in GdipCreateMatrix3)")
 
         ;set the current transformation matrix
         Result := DllCall("gdiplus\GdipSetWorldTransform","UPtr",this.pGraphics,"UPtr",pMatrix)
         If Result != 0 ;Status.Ok
         {
             DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set transformation matrix (GDI+ error " . Result . " in GdipSetWorldTransform).")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not set transformation matrix (GDI+ error " . Result . " in GdipSetWorldTransform)")
         }
 
         ;delete temporary matrix
         Result := DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
         If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete matrix (GDI+ error " . Result . " in GdipDeleteMatrix).")
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete matrix (GDI+ error " . Result . " in GdipDeleteMatrix)")
 
         this.Transforms.Remove(Index)
         Return, this
@@ -406,73 +406,73 @@ class Surface
     CheckPen(Pen)
     {
         If !Pen.pPen
-            throw Exception("INVALID_INPUT",-2,"Invalid pen: " . Pen . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid pen: " . Pen)
     }
 
     CheckBrush(Brush)
     {
         If !Brush.pBrush
-            throw Exception("INVALID_INPUT",-2,"Invalid brush: " . Brush . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid brush: " . Brush)
     }
 
     CheckLine(X1,Y1,X2,Y2)
     {
         If X1 Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X1 . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X1)
         If Y1 Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y1 . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y1)
         If X2 Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid width: " . X2 . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid width: " . X2)
         If Y2 Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid height: " . Y2 . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid height: " . Y2)
     }
 
     CheckRectangle(X,Y,W,H)
     {
         If X Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X)
         If Y Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y)
         If W < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W)
         If H < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H)
     }
 
     CheckSector(X,Y,W,H,Start,Sweep)
     {
         If X Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X)
         If Y Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y)
         If W < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid width: " . W)
         If H < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid height: " . H)
         If Start Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid start angle: " . Start . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid start angle: " . Start)
         If Sweep Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid sweep angle: " . Sweep . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid sweep angle: " . Sweep)
     }
 
     CheckPoints(Points,ByRef PointArray)
     {
         Length := Points.MaxIndex()
         If !Length
-            throw Exception("INVALID_INPUT",-2,"Invalid point set: " . Points . ".")
+            throw Exception("INVALID_INPUT",-2,"Invalid point set: " . Points)
         VarSetCapacity(PointArray,Length << 3)
         Offset := 0
         Loop, %Length%
         {
             Point := Points[A_Index]
             If !IsObject(Point)
-                throw Exception("INVALID_INPUT",-2,"Invalid point: " . Point . ".")
+                throw Exception("INVALID_INPUT",-2,"Invalid point: " . Point)
             PointX := Point[1]
             PointY := Point[2]
             If PointX Is Not Number
-                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX . ".")
+                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX)
             If PointY Is Not Number
-                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX . ".")
+                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX)
 
             NumPut(PointX,PointArray,Offset,"Float"), Offset += 4
             NumPut(PointY,PointArray,Offset,"Float"), Offset += 4
