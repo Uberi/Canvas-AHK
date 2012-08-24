@@ -45,7 +45,9 @@ Point sets are arrays of points, which are themselves arrays with two elements e
 
 Exceptions
 ----------
-There are two types of exceptions that may be thrown by this library: invalid input and internal errors. All functions in this library are capable of throwing both types of exception.
+There are two types of exceptions that may be thrown by this library: invalid input and internal errors.
+
+Exceptions may be thrown when functions are called with invalid input, when properties are set to invalid values, or when the library encounters an error internally and cannot continue. Any function call or setting of a property is capable of throwing an exception.
 
 ### Invalid Input
 Exceptions of this type take the following form:

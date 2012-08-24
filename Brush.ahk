@@ -40,19 +40,14 @@ class Brush
     __Delete()
     {
         ;delete the brush
-        this.CheckStatus(DllCall("gdiplus\GdipDeleteBrush","UPtr",this.pPen)
+        this.CheckStatus(DllCall("gdiplus\GdipDeleteBrush","UPtr",this.pBrush)
             ,"GdipDeleteBrush","Could not delete brush")
     }
 
     __Get(Key)
     {
         If (Key != "")
-        {
-            Source := this[""]
-            If Source.HasKey(Key)
-                Return, Source[Key]
-            throw Exception("INVALID_INPUT",-1,"Invalid key: " . Key)
-        }
+            Return, this[""][Key]
     }
 
     __Set(Key,Value)

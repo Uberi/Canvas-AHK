@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class Surface
 {
-    __New(Width,Height,Path = "")
+    __New(Width,Height,Path = "") ;wip: move image loading code to Viewport-like Image class with attach() and load() and save()
     {
         ObjInsert(this,"",Object())
 
@@ -180,29 +180,81 @@ class Surface
             ,"GdipGraphicsClear","Could not clear graphics")
     }
 
-    Draw(Surface,X1 = 0,Y1 = 0,W1 = "",H1 = "",X2 = 0,Y2 = 0,W2 = "",H2 = "")
+    MeasureText(Format,Value,ByRef Width,ByRef Height) ;wip: streamline
+    {
+        this.CheckFormat(Format)
+
+        VarSetCapacity(Rectangle,16,0)
+        VarSetCapacity(Bounds,16)
+        this.CheckStatus(DllCall("gdiplus\GdipMeasureString"
+            ,"UPtr",this.pGraphics
+            ,"WStr",Value ;string value
+            ,"Int",-1 ;null terminated
+            ,"UPtr",Format.hFont ;font handle
+            ,"UPtr",&Rectangle ;input bounds
+            ,"UPtr",Format.hFormat ;string format
+            ,"UPtr",&Bounds ;output bounds
+            ,"UPtr",0 ;output number of characters that can fit in input bounds
+            ,"UPtr",0) ;output number of lines that can fit in input bounds
+            ,"GdipMeasureString","Could not measure text bounds")
+        Width := NumGet(Bounds,8,"Float")
+        Height := NumGet(Bounds,12,"Float")
+        Return, this
+    }
+
+    Text(Brush,Format,Value,X,Y,W = "",H = "") ;wip: streamline
+    {
+        this.CheckBrush(Brush)
+        this.CheckFormat(Format)
+
+        ;determine dimensions automatically if not specified
+        If (W = "")
+            W := 0
+        If (H = "")
+            H := 0
+
+        ;create bounding rectangle
+        this.CheckRectangle(X,Y,W,H)
+        VarSetCapacity(Rectangle,16)
+        NumPut(X,Rectangle,0,"Float")
+        NumPut(Y,Rectangle,4,"Float")
+        NumPut(W,Rectangle,8,"Float")
+        NumPut(H,Rectangle,12,"Float")
+
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawString"
+            ,"UPtr",this.pGraphics ;graphics handle
+            ,"WStr",Value ;string value
+            ,"Int",-1 ;null terminated
+            ,"UPtr",Format.hFont ;font handle
+            ,"UPtr",&Rectangle ;bounding rectangle
+            ,"UPtr",Format.hFormat ;string format
+            ,"UPtr",Brush.pBrush) ;fill brush
+            ,"GdipDrawString","Could not draw text")
+    }
+
+    Draw(Surface,X = 0,Y = 0,W = "",H = "",SourceX = 0,SourceY = 0,SourceW = "",SourceH = "") ;wip: streamline
     {
         If !Surface.hBitmap
             throw Exception("INVALID_INPUT",-1,"Invalid surface: " . Surface)
 
-        If (W1 = "")
-            W1 := this.Width
-        If (H1 = "")
-            H1 := this.Height
-        If (W2 = "")
-            W2 := Surface.Width
-        If (H2 = "")
-            H2 := Surface.Height
+        If (W = "")
+            W := this.Width
+        If (H = "")
+            H := this.Height
+        If (SourceW = "")
+            SourceW := Surface.Width
+        If (SourceH = "")
+            SourceH := Surface.Height
 
-        this.CheckRectangle(X1,Y1,W1,H1)
-        this.CheckRectangle(X2,Y2,W2,H2)
+        this.CheckRectangle(X,Y,W,H)
+        this.CheckRectangle(SourceX,SourceY,SourceW,SourceH)
 
         pBitmap := 0
         this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromHBITMAP","UPtr",Surface.hBitmap,"UPtr",0,"UPtr*",pBitmap)
             ,"GdipCreateBitmapFromHBITMAP","Could not obtain bitmap pointer from bitmap handle")
         this.CheckStatus(DllCall("gdiplus\GdipDrawImageRectRect","UPtr",this.pGraphics,"UPtr",pBitmap
-            ,"Float",X1,"Float",Y1,"Float",W1,"Float",H1
-            ,"Float",X2,"Float",Y2,"Float",W2,"Float",H2
+            ,"Float",X,"Float",Y,"Float",W,"Float",H
+            ,"Float",SourceX,"Float",SourceY,"Float",SourceW,"Float",SourceH
             ,"Int",2,"UPtr",0,"UPtr",0,"UPtr",0) ;Unit.UnitPixel
             ,"GdipDrawImageRectRect","Could not transfer image data to surface")
     }
@@ -211,7 +263,6 @@ class Surface
     {
         this.CheckPen(Pen)
         this.CheckSector(X,Y,W,H,Start,Sweep)
-
         Return, this.CheckStatus(DllCall("gdiplus\GdipDrawArc","UPtr",this.pGraphics,"UPtr",Pen.pPen,"Float",X,"Float",Y,"Float",W,"Float",H,"Float",Start - 90,"Float",Sweep)
             ,"GdipDrawArc","Could not draw arc")
     }
@@ -421,6 +472,10 @@ class Surface
     {
     }
 
+    StubCheckFormat(Brush)
+    {
+    }
+
     StubCheckLine(X1,Y1,X2,Y2)
     {
     }
@@ -488,6 +543,12 @@ class Surface
     CheckBrush(Brush)
     {
         If !Brush.pBrush
+            throw Exception("INVALID_INPUT",-2,"Invalid brush: " . Brush)
+    }
+
+    CheckFormat(Format)
+    {
+        If !(Format.hFontFamily && Format.hFont && Format.hFormat)
             throw Exception("INVALID_INPUT",-2,"Invalid brush: " . Brush)
     }
 

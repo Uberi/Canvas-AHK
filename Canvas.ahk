@@ -19,7 +19,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-;wip: following does not allow closing:
+;wip: following does not allow closing due to subclassing issue:
 /*
 Gui, +LastFound +Resize
 v := new Canvas.Viewport(WinExist())
@@ -40,25 +40,26 @@ ExitApp
 ;wip: add hatch brush, texture brush, and linear/radial gradient brush capabilities to Brush class
 ;wip: use CachedBitmap for animations: http://msdn.microsoft.com/en-us/library/ms533975(v=vs.85).aspx
 ;wip: see methods here: http://www.w3schools.com/html5/html5_ref_canvas.asp
-;wip: automatically scale surface to viewport
 
 /*
 #Warn All
 #Warn LocalSameAsGlobal, Off
 
 i := new Canvas.Surface(0,0,A_ScriptDir . "\Earthrise.jpg")
-s := new Canvas.Surface(200,200)
+s := new Canvas.Surface(400,400)
 s.Draw(i)
 
+f := new Canvas.Format("Georgia",24)
+s.Text(new Canvas.Brush(0xFFFFFFFF),f,"Earthrise: Dawn of a new era",30,30)
+
 Gui, +LastFound
-v := new Canvas.Viewport(WinExist())
-v.Attach(s)
+v := new Canvas.Viewport(WinExist()).Attach(s)
 
 p := new Canvas.Pen(0x80FF0000,10)
 t := new Canvas.Pen(0xFF00FF00,3)
 b := new Canvas.Brush(0xAA0000FF)
 
-Gui, Show, w200 h200, Canvas Demo
+Gui, Show, w400 h400, Canvas Demo
 Return
 
 GuiClose:
@@ -106,9 +107,11 @@ class Canvas
 
     Lenient()
     {
+        ;wip: do this for all the modules
         this.Surface.CheckStatus := this.Surface.StubCheckStatus
         this.Surface.CheckPen := this.Surface.StubCheckPen
         this.Surface.CheckBrush := this.Surface.StubCheckBrush
+        this.Surface.CheckFormat := this.Surface.StubCheckFormat
         this.Surface.CheckLine := this.Surface.StubCheckLine
         this.Surface.CheckRectangle := this.Surface.StubCheckRectangle
         this.Surface.CheckSector := this.Surface.StubCheckSector
@@ -120,4 +123,5 @@ class Canvas
     #Include Surface.ahk
     #Include Pen.ahk
     #Include Brush.ahk
+    #Include Format.ahk
 }
