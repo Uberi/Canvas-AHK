@@ -29,6 +29,10 @@ Return
 GuiClose:
 ExitApp
 */
+
+;wip: effects support with http://msdn.microsoft.com/en-us/library/windows/desktop/ms533971(v=vs.85).aspx
+;wip: opengl backend
+;wip: ASCII backend with drawing functions here: http://free.pages.at/easyfilter/bresenham.html
 ;wip: split docs into separate files
 ;wip: combine the draw* and fill* functions: DrawPie(Pen) and FillPie(Brush) -> Pie(Pen) and Pie(Brush)
 ;wip: fold pens into brushes; allow brushes to define widths, fills, etc.
@@ -42,8 +46,9 @@ ExitApp
 #Warn All
 #Warn LocalSameAsGlobal, Off
 
+i := new Canvas.Surface(0,0,A_ScriptDir . "\Earthrise.jpg")
 s := new Canvas.Surface(200,200)
-s.Push()
+s.Draw(i)
 
 Gui, +LastFound
 v := new Canvas.Viewport(WinExist())
@@ -53,6 +58,13 @@ p := new Canvas.Pen(0x80FF0000,10)
 t := new Canvas.Pen(0xFF00FF00,3)
 b := new Canvas.Brush(0xAA0000FF)
 
+Gui, Show, w200 h200, Canvas Demo
+Return
+
+GuiClose:
+ExitApp
+
+Space::
 s.Clear(0xFFFFFF00)
  .Push()
  .Translate(50,50)
@@ -61,15 +73,7 @@ s.Clear(0xFFFFFF00)
  .Pop()
  .DrawEllipse(p,70,70,100,100)
  .DrawCurve(t,[[10,10],[50,10],[10,50]],True)
-
-Gui, Show, w200 h200, Canvas Demo
-Return
-
-GuiClose:
-ExitApp
-
-Space::
-s.FillPie(b,100,100,50,50,0,270)
+ .FillPie(b,100,100,50,50,0,270)
 v.Refresh()
 Return
 */
@@ -116,32 +120,4 @@ class Canvas
     #Include Surface.ahk
     #Include Pen.ahk
     #Include Brush.ahk
-
-    CheckStatus(Result,Name,Message)
-    {
-        static StatusValues := ["Status.GenericError"
-                               ,"Status.InvalidParameter"
-                               ,"Status.OutOfMemory"
-                               ,"Status.ObjectBusy"
-                               ,"Status.InsufficientBuffer"
-                               ,"Status.NotImplemented"
-                               ,"Status.Win32Error"
-                               ,"Status.WrongState"
-                               ,"Status.Aborted"
-                               ,"Status.FileNotFound"
-                               ,"Status.ValueOverflow"
-                               ,"Status.AccessDenied"
-                               ,"Status.UnknownImageFormat"
-                               ,"Status.FontFamilyNotFound"
-                               ,"Status.FontStyleNotFound"
-                               ,"Status.NotTrueTypeFont"
-                               ,"Status.UnsupportedGdiplusVersion"
-                               ,"Status.GdiplusNotInitialized"
-                               ,"Status.PropertyNotFound"
-                               ,"Status.PropertyNotSupported"
-                               ,"Status.ProfileNotFound"]
-        If Result != 0 ;Status.Ok
-            throw Exception("INTERNAL_ERROR",-1,Message . " (GDI+ error " . StatusValues[Result] . " in " . Name . ")")
-        Return, this
-    }
 }

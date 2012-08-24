@@ -21,22 +21,43 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class Surface
 {
-    __New(Width,Height)
+    __New(Width,Height,Path = "")
     {
-        If Width Is Not Integer
-            throw Exception("INVALID_INPUT",-1,"Invalid width: " . Width)
-        If Height Is Not Integer
-            throw Exception("INVALID_INPUT",-1,"Invalid height: " . Height)
-
         ObjInsert(this,"",Object())
-
-        this.Width := Width
-        this.Height := Height
 
         ;create a memory device context for double buffering use
         this.hMemoryDC := DllCall("CreateCompatibleDC","UPtr",0,"UPtr")
         If !this.hMemoryDC
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create memory device context (error in CreateCompatibleDC)")
+
+        If (Path = "")
+            this.CreateBitmap(Width,Height)
+        Else
+            this.LoadBitmap(Path)
+
+        ;select the bitmap into the memory device context
+        this.hOriginalBitmap := DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hBitmap,"UPtr")
+        If !this.hOriginalBitmap
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not select bitmap into memory device context (error in SelectObject)")
+
+        ;create a graphics object
+        pGraphics := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hMemoryDC,"UPtr*",pGraphics)
+            ,"GdipCreateFromHDC","Could not create graphics object")
+        this.pGraphics := pGraphics
+
+        this.Transforms := []
+
+        this.Interpolation := "None"
+        this.Smooth := "None"
+    }
+
+    CreateBitmap(Width,Height)
+    {
+        If Width < 0
+            throw Exception("INVALID_INPUT",-2,"Invalid width: " . Width)
+        If Height < 0
+            throw Exception("INVALID_INPUT",-2,"Invalid height: " . Height)
 
         ;set up BITMAPINFO structure
         VarSetCapacity(BitmapInfo,40)
@@ -58,32 +79,39 @@ class Surface
         If !this.hBitmap
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create bitmap (error in CreateDIBSection)")
 
-        ;select the bitmap into the memory device context
-        this.hOriginalBitmap := DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hBitmap,"UPtr")
-        If !this.hOriginalBitmap
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not select bitmap into memory device context (error in SelectObject)")
+        this.Width := Width
+        this.Height := Height
+    }
 
-        ;create a graphics object
-        pGraphics := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hMemoryDC,"UPtr*",pGraphics)
-            ,"GdipCreateFromHDC","Could not create graphics object")
-        this.pGraphics := pGraphics
+    LoadBitmap(Path)
+    {
+        Attributes := FileExist(Path)
+        If !Attributes ;path does not exist
+            throw Exception("INVALID_INPUT",-1,"Invalid path")
+        If InStr(Attributes,"D") ;path is not a file
+            throw Exception("INVALID_INPUT",-1,"Invalid file")
+        pBitmap := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromFile", "WStr",Path,"UPtr*",pBitmap)
+            ,"GdipCreateBitmapFromFile","Could not create bitmap from file")
+        Width := 0
+        this.CheckStatus(DllCall("gdiplus\GdipGetImageWidth","UPtr",pBitmap,"UInt*",Width)
+            ,"GdipGetImageWidth","Could not obtain image width")
+        Height := 0
+        this.CheckStatus(DllCall("gdiplus\GdipGetImageHeight","UPtr",pBitmap,"UInt*",Height)
+            ,"GdipGetImageHeight","Could not obtain image height")
+        hBitmap := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateHBITMAPFromBitmap","UPtr",pBitmap,"UPtr*",hBitmap,"UPtr",0)
+            ,"GdipCreateHBITMAPFromBitmap","Could not obtain bitmap handle from bitmap pointer")
 
-        this.Transforms := []
-
-        this.Interpolation := "None"
-        this.Smooth := "None"
+        this.hBitmap := hBitmap
+        this.Width := Width
+        this.Height := Height
     }
 
     __Get(Key)
     {
         If (Key != "")
-        {
-            Source := this[""]
-            If Source.HasKey(Key)
-                Return, Source[Key]
-            throw Exception("INVALID_INPUT",-1,"Invalid key: " . Key)
-        }
+            Return, this[""][Key]
     }
 
     __Set(Key,Value)
@@ -150,6 +178,33 @@ class Surface
             throw Exception("INVALID_INPUT",-1,"Invalid color: " . Color)
         Return, this.CheckStatus(DllCall("gdiplus\GdipGraphicsClear","UPtr",this.pGraphics,"UInt",Color)
             ,"GdipGraphicsClear","Could not clear graphics")
+    }
+
+    Draw(Surface,X1 = 0,Y1 = 0,W1 = "",H1 = "",X2 = 0,Y2 = 0,W2 = "",H2 = "")
+    {
+        If !Surface.hBitmap
+            throw Exception("INVALID_INPUT",-1,"Invalid surface: " . Surface)
+
+        If (W1 = "")
+            W1 := this.Width
+        If (H1 = "")
+            H1 := this.Height
+        If (W2 = "")
+            W2 := Surface.Width
+        If (H2 = "")
+            H2 := Surface.Height
+
+        this.CheckRectangle(X1,Y1,W1,H1)
+        this.CheckRectangle(X2,Y2,W2,H2)
+
+        pBitmap := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromHBITMAP","UPtr",Surface.hBitmap,"UPtr",0,"UPtr*",pBitmap)
+            ,"GdipCreateBitmapFromHBITMAP","Could not obtain bitmap pointer from bitmap handle")
+        this.CheckStatus(DllCall("gdiplus\GdipDrawImageRectRect","UPtr",this.pGraphics,"UPtr",pBitmap
+            ,"Float",X1,"Float",Y1,"Float",W1,"Float",H1
+            ,"Float",X2,"Float",Y2,"Float",W2,"Float",H2
+            ,"Int",2,"UPtr",0,"UPtr",0,"UPtr",0) ;Unit.UnitPixel
+            ,"GdipDrawImageRectRect","Could not transfer image data to surface")
     }
 
     DrawArc(Pen,X,Y,W,H,Start,Sweep)
