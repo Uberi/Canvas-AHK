@@ -180,7 +180,7 @@ class Surface
             ,"GdipGraphicsClear","Could not clear graphics")
     }
 
-    MeasureText(Format,Value,ByRef Width,ByRef Height) ;wip: streamline
+    MeasureText(Format,Value,ByRef Width,ByRef Height) ;wip: streamline and sort
     {
         this.CheckFormat(Format)
 
@@ -202,7 +202,7 @@ class Surface
         Return, this
     }
 
-    Text(Brush,Format,Value,X,Y,W = "",H = "") ;wip: streamline
+    Text(Brush,Format,Value,X,Y,W = "",H = "") ;wip: streamline and sort
     {
         this.CheckBrush(Brush)
         this.CheckFormat(Format)

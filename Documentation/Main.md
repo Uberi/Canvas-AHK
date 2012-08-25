@@ -49,6 +49,8 @@ There are two types of exceptions that may be thrown by this library: invalid in
 
 Exceptions may be thrown when functions are called with invalid input, when properties are set to invalid values, or when the library encounters an error internally and cannot continue. Any function call or setting of a property is capable of throwing an exception.
 
+By the time an exception is thrown, any temporary resources have already been cleaned up. It is not necessary to clean up anything manually.
+
 ### Invalid Input
 Exceptions of this type take the following form:
 

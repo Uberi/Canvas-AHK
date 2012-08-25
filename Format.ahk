@@ -87,17 +87,28 @@ class Format
 
     __Set(Key,Value)
     {
+        static AlignStyles := Object("Left",0 ;StringAlignment.StringAlignmentNear
+                                   ,"Center",1 ;StringAlignment.StringAlignmentCenter
+                                   ,"Right",2) ;StringAlignment.StringAlignmentFar
         If (Key = "Size")
         {
             If Value Is Not Number
                 throw Exception("INVALID_INPUT",-1,"Invalid size: " . Value)
-            this[""][Key] := Value
+            this[""].Size := Value
             this.CreateFont() ;wip: delete old first
         }
         Else If (Key = "Typeface" || Key = "Bold" || Key = "Italic" || Key = "Underline" || Key = "Strikeout")
         {
             this[""][Key] := Value
             this.CreateFont() ;wip: delete old first
+        }
+        Else If (Key = "Align")
+        {
+            If !AlignStyles.HasKey(Value)
+                throw Exception("INVALID_INPUT",-1,"Invalid alignment: " . Value)
+            this.CheckStatus(DllCall("gdiplus\GdipSetStringFormatAlign","UPtr",this.hFormat,"UInt",AlignStyles[Value])
+                ,"GdipSetStringFormatAlign","Could not set string format alignment")
+            this[""].Align := Value
         }
         Else
             this[""][Key] := Value

@@ -49,8 +49,8 @@ i := new Canvas.Surface(0,0,A_ScriptDir . "\Earthrise.jpg")
 s := new Canvas.Surface(400,400)
 s.Draw(i)
 
-f := new Canvas.Format("Georgia",24)
-s.Text(new Canvas.Brush(0xFFFFFFFF),f,"Earthrise: Dawn of a new era",30,30)
+f := new Canvas.Format("Georgia",18)
+s.Text(new Canvas.Brush(0xFFFFFFFF),f,"Earthrise: Dawn of a new era",30,80)
 
 Gui, +LastFound
 v := new Canvas.Viewport(WinExist()).Attach(s)
