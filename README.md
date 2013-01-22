@@ -1,6 +1,6 @@
 Canvas-AHK
 ==========
-High level drawing library for AutoHotkey.
+High level drawing library for [AutoHotkey](http://www.autohotkey.com/).
 
 Usage
 -----
