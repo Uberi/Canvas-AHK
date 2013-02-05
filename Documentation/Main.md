@@ -134,17 +134,88 @@ Draws an arc of an ellipse at X-axis coordinate `X` (units) and Y-axis coordinat
 Returns the surface object.
 
 ### Canvas.DrawCurve(Pen,Points,Closed = False)
-;wip
+;wip: talk about the Tension parameter tht is added with GdipDrawCurve2
+Draws a cardinal spline as a curved line with pen `Pen` (pen), passing through each point in point set `Points` (point set). If boolean flag `Closed` (boolean) is set, the curve will be drawn as the outline of a closed shape. Otherwise, the curve is open.
+
+Returns the surface object.
+
+### Canvas.Surface.DrawEllipse(Pen,X,Y,W,H)
+Draws the outline of an ellipse at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units). The coordinates and dimensions define the bounding rectangle of the ellipse.
+
+Returns the surface object.
+
+### Canvas.Surface.DrawPie(Pen,X,Y,W,H,Start,Sweep)
+Draws the outline of a pie (an arc with lines leading from the end to the center) of an ellipse with pen `Pen` (pen) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units), starting at angle `Start` (angle) and sweeping for angle `Sweep` (angle). The coordinates and dimensions define the bounding rectangle of the ellipse if it were to be drawn in full.
+
+Returns the surface object.
+
+### Canvas.Surface.DrawPolygon(Pen,Points)
+Draws the outline of a closed polygon with pen `Pen` (pen), with the vertices defined by point set `Points` (point set).
+
+Returns the surface object.
+
+### Canvas.Surface.DrawRectangle(Pen,X,Y,W,H)
+Draws the outline of a rectangle with pen `Pen` (pen) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units).
+
+Returns the surface object.
+
+### Canvas.Surface.FillCurve(Brush,Points)
+Fills the area of a closed cardinal spline with brush `Brush` (brush), passing through each point in point set `Points` (point set).
+
+Returns the surface object.
+
+### Canvas.Surface.FillEllipse(Brush,X,Y,W,H)
+Fills the area of an ellipse with brush `Brush` (brush) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units). The coordinates and dimensions define the bounding rectangle of the ellipse.
+
+Returns the surface object.
+
+### Canvas.Surface.FillPie(Brush,X,Y,W,H,Start,Sweep)
+Fills the area of a pie (an arc with lines leading from the end to the center) of an ellipse with brush `Brush` (brush) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units), starting at angle `Start` (angle) and sweeping for angle `Sweep` (angle). The coordinates and dimensions define the bounding rectangle of the ellipse if it were to be drawn in full.
+
+Returns the surface object.
+
+### Canvas.Surface.FillPolygon(Brush,Points)
+Fills the area of a closed polygon with brush `Brush` (brush), with the vertices defined by point set `Points` (point set).
+
+Returns the surface object.
+
+### Canvas.Surface.FillRectangle(Brush,X,Y,W,H)
+Fills the area of a rectangle with brush `Brush` (brush) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units).
+
+Returns the surface object.
 
 ### Canvas.Surface.Line(Pen,X1,Y1,X2,Y2)
-Draws a single line with the pen `Pen` (Pen), starting at X-axis coordinate `X1` (units) and Y-axis coordinate `Y1` (units), ending at X-axis coordinate `X2` (units) and Y-axis coordinate `Y2` (units).
+Draws a single line with pen `Pen` (pen), starting at X-axis coordinate `X1` (units) and Y-axis coordinate `Y1` (units), ending at X-axis coordinate `X2` (units) and Y-axis coordinate `Y2` (units).
 
 Returns the surface object.
 
 ### Canvas.Surface.Lines(Pen,Points)
-Draws a series of connected lines with pen `Pen` (Pen), at coordinates defined by point set `Points` (point set).
+Draws a series of connected lines with pen `Pen` (pen), at coordinates defined by point set `Points` (point set).
 
 Returns the surface object.
+
+### Canvas.Surface.TextDimensions(Format,Value,ByRef Width,ByRef Height)
+Determines the width and height of the bounding box of text `Value` (text) if it were to be drawn with format `Format` (format). The resulting numbers can be found in the variables passed as `Width` and `Height`.
+
+Returns the surface object.
+
+### Canvas.Surface.Text(Brush,Format,Value,X,Y,W = "",H = "")
+Draws text `Text` (text) with brush `Brush` (brush) and format `Format` (format), at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units). If width `W` (units) is specified, the text is drawn with that width. If height `H` (units) is specified, the text is drawn with that height. Otherwise, both dimensions are assumed to be those of the text.
+
+### Canvas.Surface.Push()
+;wip
+
+### Canvas.Surface.Pop()
+;wip
+
+### Canvas.Surface.Translate(X,Y)
+;wip
+
+### Canvas.Surface.Rotate(Angle)
+;wip
+
+### Canvas.Surface.Scale(X,Y)
+;wip
 
 Viewports
 ---------
