@@ -151,9 +151,8 @@ Draws an arc of an ellipse at X-axis coordinate `X` (units) and Y-axis coordinat
 
 Returns the surface object.
 
-### Canvas.DrawCurve(Pen,Points,Closed = False)
-;wip: talk about the Tension parameter that is added with GdipDrawCurve2
-Draws a cardinal spline as a curved line with `Pen` (pen), passing through each point in `Points` (point set). If `Closed` (boolean) is set, the curve will be drawn as the outline of a closed shape. Otherwise, the curve is open.
+### Canvas.DrawCurve(Pen,Points,Closed = False,Tension = 1)
+Draws a cardinal spline as a curved line with `Pen` (pen), passing through each point in `Points` (point set). If `Closed` (boolean) is set, the curve will be drawn as the outline of a closed shape. Otherwise, the curve is open. The curve's bend flexibility is denoted by `Tension` (0 to 1 inclusive), where 0 results in straight lines between points and 1 results in a Catmull-Rom/neutral spline. Tension is proportional to the length of each tangent.
 
 Returns the surface object.
 
@@ -318,5 +317,14 @@ Represents the end cap style of the pen (cap style). Can be set to change the cu
 Brushes
 -------
 Brushes represent fill properties such as color or texture, and are used to fill the interior of shapes in graphics operations.
+
+### Canvas.Brush.__New(Color = 0xFFFFFFFF)
+Creates a brush object representing a set of fill properties, with color defined by `Color` (color).
+
+### Canvas.Brush.Color
+Represents the current color of the brush (color). Can be set to change the current color.
+
+Text Formats
+------------
 
 ;wip
