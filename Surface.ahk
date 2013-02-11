@@ -267,15 +267,18 @@ class Surface
             ,"GdipDrawArc","Could not draw arc")
     }
 
-    DrawCurve(Pen,Points,Closed = False)
+    DrawCurve(Pen,Points,Closed = False,Tension = 1)
     {
         this.CheckPen(Pen)
         Length := this.CheckPoints(Points,PointArray)
+        If Tension Not Between 0 And 1
+            throw Exception("INVALID_INPUT",-1,"Invalid curve tension: " . Tension)
+
         If Closed
-            Return, this.CheckStatus(DllCall("gdiplus\GdipDrawClosedCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
-                ,"GdipDrawClosedCurve","Could not draw curve")
-        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawCurve","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length)
-            ,"GdipDrawCurve","Could not draw curve")
+            Return, this.CheckStatus(DllCall("gdiplus\GdipDrawClosedCurve2","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length,"Float",Tension)
+                ,"GdipDrawClosedCurve2","Could not draw curve")
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawCurve2","UPtr",this.pGraphics,"UPtr",Pen.pPen,"UPtr",&PointArray,"Int",Length,"Float",Tension)
+            ,"GdipDrawCurve2","Could not draw curve")
     }
 
     DrawEllipse(Pen,X,Y,W,H)
