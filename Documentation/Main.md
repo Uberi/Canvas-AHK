@@ -106,7 +106,7 @@ Creates a surface object representing a set of graphics properties and data, hav
 
 If `Path` is not a blank string, it is interpreted as a path to a supported image file, which will be loaded as the contents of the surface. In this case, the `Width` and `Height` parameters are ignored, and instead the dimensions of the surface are determined by the dimensions of the image. ;wip: document supported image formats
 
-Returns the surface object.
+Returns the new surface object.
 
 ### Canvas.Surface.Interpolation := "None"
 Represents the current interpolation mode of the surface (interpolation style). Interpolation modes define the appearance of surfaces when scaled.
@@ -217,7 +217,7 @@ Determines the width and height of the bounding box of `Value` (text) if it were
 Returns the surface object.
 
 ### Canvas.Surface.Text(Brush,Format,Value,X,Y,W = "",H = "")
-Draws `Text` (text) with `Brush` (brush) and `Format` (format), at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units). If width `W` (units) is specified, the text is drawn with that width. If height `H` (units) is specified, the text is drawn with that height. Otherwise, both dimensions are assumed to be those of the text's bounding box.
+Draws `Text` (text) with `Brush` (brush) and `Format` (format), at X-axis coordinate `X` (units) and baseline Y-axis coordinate `Y` (units). If width `W` (units) is specified, the text is drawn with that width. If height `H` (units) is specified, the text is drawn with that height. Otherwise, both dimensions are assumed to be those of the text's bounding box.
 
 ### Canvas.Surface.Push()
 Pushes the current transformation state onto the transform stack. The transformation state includes the current translation, rotation, and scaling.
@@ -251,7 +251,7 @@ Surfaces attached to viewports will have their contents displayed in the viewpor
 ### Canvas.Viewport.__New(hWindow)
 Creates a viewport object representing a window referenced by the window handle `hWindow` (hwnd).
 
-Returns the viewport object.
+Returns the new viewport object.
 
 ### Canvas.Viewport.Attach(Surface)
 Attaches surface `Surface` (Canvas.Surface) to the viewport so that it is displayed by the viewport.
@@ -272,6 +272,8 @@ Pens represent drawing properties such as color or width, and are used to draw t
 ### Canvas.Pen.__New(Color = 0xFFFFFFFF,Width = 1)
 Creates a pen object representing a set of drawing properties, with color defined by `Color` (color) and width defined by `Width` (units).
 
+Returns the new pen object.
+
 ### Canvas.Pen.Color
 Represents the current color of the pen (color). Can be set to change the current color.
 
@@ -281,7 +283,7 @@ Represents the current width of the pen (units). Can be set to change the curren
 ### Canvas.Pen.Join := "Miter"
 Represents the current join style of the pen (join style). Can be set to change the current join style. Join styles define how the points where lines join are displayed when drawing multiple connected lines.
 
-Line join styles are one of the following values:
+Join styles are one of the following values:
 
 | Style | Effect                                                                                      |
 |:------|:--------------------------------------------------------------------------------------------|
@@ -321,10 +323,45 @@ Brushes represent fill properties such as color or texture, and are used to fill
 ### Canvas.Brush.__New(Color = 0xFFFFFFFF)
 Creates a brush object representing a set of fill properties, with color defined by `Color` (color).
 
+Returns the new brush object.
+
 ### Canvas.Brush.Color
 Represents the current color of the brush (color). Can be set to change the current color.
 
-Text Formats
-------------
+Formats
+-------
+Formats represent text properties such as typeface and font size, and are used to draw text in graphics operations.
 
-;wip
+### Canvas.Format.__New(Typeface,Size)
+Creates a format object representing a set of text properties, with typeface defined by `Typeface` (string) and font size defined by `Size` (positive real number). The typeface must exist on the current system.
+
+Returns the new format object.
+
+### Canvas.Format.Typeface
+Represents the current typeface of the format (string). Can be set to change the current typeface.
+
+### Canvas.Format.Size
+Represents the current size of the format (positive real number). Can be set to change the current size.
+
+### Canvas.Format.Bold := False
+Represents whether the format is currently bold (boolean). Can be set to change whether the format is currently bold. Bold text is drawn in a heavier weight.
+
+### Canvas.Format.Italic := False
+Represents whether the format is currently italic (boolean). Can be set to change whether the format is currently italic. Italic text is drawn at an angle relative to the baseline.
+
+### Canvas.Format.Underline := False
+Represents whether the format is currently underlined (boolean). Can be set to change whether the format is currently underlined. Underlined text is drawn with a line underneath.
+
+### Canvas.Format.Strikeout := False
+Represents whether the format is currently struck out (boolean). Can be set to change whether the format is currently struck out. Struck out text is drawn with a line through the vertical center.
+
+### Canvas.Format.Align := "Left"
+Represents the current text alignment of the format (align style). Can be set to change the current text alignment.
+
+Align styles are one of the following values:
+
+| Style  | Effect                                                                                |
+|:-------|:--------------------------------------------------------------------------------------|
+| Left   | The text is drawn starting at the X-axis coordinate specified.                        |
+| Center | The text is drawn with the center on the X-axis coordinate specified.                 |
+| Right  | The text is drawn starting at the left and ending at the X-axis coordinate specified. |
