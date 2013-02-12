@@ -4,6 +4,8 @@ class Format
     {
         If Size Is Not Number
             throw Exception("INVALID_INPUT",-1,"Invalid size: " . Size)
+        If Size <= 0
+            throw Exception("INVALID_INPUT",-1,"Invalid size: " . Size)
 
         ObjInsert(this,"",Object())
 
@@ -87,12 +89,14 @@ class Format
 
     __Set(Key,Value)
     {
-        static AlignStyles := Object("Left",0 ;StringAlignment.StringAlignmentNear
-                                   ,"Center",1 ;StringAlignment.StringAlignmentCenter
-                                   ,"Right",2) ;StringAlignment.StringAlignmentFar
+        static AlignStyles := Object("Left",  0  ;StringAlignment.StringAlignmentNear
+                                    ,"Center",1  ;StringAlignment.StringAlignmentCenter
+                                    ,"Right", 2) ;StringAlignment.StringAlignmentFar
         If (Key = "Size")
         {
             If Value Is Not Number
+                throw Exception("INVALID_INPUT",-1,"Invalid size: " . Value)
+            If Value <= 0
                 throw Exception("INVALID_INPUT",-1,"Invalid size: " . Value)
             this[""].Size := Value
             this.CreateFont() ;wip: delete old first
