@@ -49,7 +49,7 @@ i := new Canvas.Surface(0,0,A_ScriptDir . "\Earthrise.jpg")
 s := new Canvas.Surface(400,400)
 s.Draw(i)
 
-f := new Canvas.Format("Georgia",18)
+f := new Canvas.Font("Georgia",18)
 s.Text(new Canvas.Brush(0xFFFFFFFF),f,"Earthrise: Dawn of a new era",30,80)
 
 Gui, +LastFound
@@ -123,5 +123,5 @@ class Canvas
     #Include Surface.ahk
     #Include Pen.ahk
     #Include Brush.ahk
-    #Include Format.ahk
+    #Include Font.ahk
 }

@@ -1,4 +1,4 @@
-class Format
+class Font
 {
     __New(Typeface,Size)
     {

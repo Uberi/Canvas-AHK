@@ -7,7 +7,7 @@ Overview
 * Surfaces are where things are drawn.
 * Viewports display surfaces on the screen.
 * Pens and brushes define what the drawn things look like.
-* Formats define what drawn text looks like.
+* Fonts define what drawn text looks like.
 
 Types
 -----
@@ -211,13 +211,13 @@ Draws a series of connected lines with `Pen` (pen), at coordinates defined by `P
 
 Returns the surface object.
 
-### Canvas.Surface.TextDimensions(Format,Value,ByRef Width,ByRef Height)
-Determines the width and height of the bounding box of `Value` (text) if it were to be drawn with `Format` (format). The resulting numbers can be found in the variables passed as `Width` and `Height`.
+### Canvas.Surface.TextDimensions(Font,Value,ByRef Width,ByRef Height)
+Determines the width and height of the bounding box of `Value` (text) if it were to be drawn with `Font` (font). The resulting numbers can be found in the variables passed as `Width` and `Height`.
 
 Returns the surface object.
 
-### Canvas.Surface.Text(Brush,Format,Value,X,Y,W = "",H = "")
-Draws `Text` (text) with `Brush` (brush) and `Format` (format), at X-axis coordinate `X` (units) and baseline Y-axis coordinate `Y` (units). If width `W` (units) is specified, the text is drawn with that width. If height `H` (units) is specified, the text is drawn with that height. Otherwise, both dimensions are assumed to be those of the text's bounding box.
+### Canvas.Surface.Text(Brush,Font,Value,X,Y,W = "",H = "")
+Draws `Text` (text) with `Brush` (brush) and `Font` (font), at X-axis coordinate `X` (units) and baseline Y-axis coordinate `Y` (units). If width `W` (units) is specified, the text is drawn with that width. If height `H` (units) is specified, the text is drawn with that height. Otherwise, both dimensions are assumed to be those of the text's bounding box.
 
 ### Canvas.Surface.Push()
 Pushes the current transformation state onto the transform stack. The transformation state includes the current translation, rotation, and scaling.
@@ -328,35 +328,35 @@ Returns the new brush object.
 ### Canvas.Brush.Color
 Represents the current color of the brush (color). Can be set to change the current color.
 
-Formats
--------
-Formats represent text properties such as typeface and font size, and are used to draw text in graphics operations.
+Font
+----
+Fonts represent text properties such as typeface and line height, and are used to draw text in graphics operations.
 
-### Canvas.Format.__New(Typeface,Size)
-Creates a format object representing a set of text properties, with typeface defined by `Typeface` (string) and font size defined by `Size` (positive real number). The typeface must exist on the current system.
+### Canvas.Font.__New(Typeface,Size)
+Creates a font object representing a set of text properties, with typeface defined by `Typeface` (string) and font size defined by `Size` (positive real number). The typeface must exist on the current system.
 
-Returns the new format object.
+Returns the new font object.
 
-### Canvas.Format.Typeface
-Represents the current typeface of the format (string). Can be set to change the current typeface.
+### Canvas.Font.Typeface
+Represents the current typeface of the font (string). Can be set to change the current typeface.
 
-### Canvas.Format.Size
-Represents the current size of the format (positive real number). Can be set to change the current size.
+### Canvas.Font.Size
+Represents the current line height of the font (positive real number). Can be set to change the current line height.
 
-### Canvas.Format.Bold := False
-Represents whether the format is currently bold (boolean). Can be set to change whether the format is currently bold. Bold text is drawn in a heavier weight.
+### Canvas.Font.Bold := False
+Represents whether the font is currently bold (boolean). Can be set to change whether the font is currently bold. Bold text is drawn in a heavier weight.
 
-### Canvas.Format.Italic := False
-Represents whether the format is currently italic (boolean). Can be set to change whether the format is currently italic. Italic text is drawn at an angle relative to the baseline.
+### Canvas.Font.Italic := False
+Represents whether the font is currently italic (boolean). Can be set to change whether the font is currently italic. Italic text is drawn at an angle relative to the baseline.
 
-### Canvas.Format.Underline := False
-Represents whether the format is currently underlined (boolean). Can be set to change whether the format is currently underlined. Underlined text is drawn with a line underneath.
+### Canvas.Font.Underline := False
+Represents whether the font is currently underlined (boolean). Can be set to change whether the font is currently underlined. Underlined text is drawn with a line underneath.
 
-### Canvas.Format.Strikeout := False
-Represents whether the format is currently struck out (boolean). Can be set to change whether the format is currently struck out. Struck out text is drawn with a line through the vertical center.
+### Canvas.Font.Strikeout := False
+Represents whether the font is currently struck out (boolean). Can be set to change whether the font is currently struck out. Struck out text is drawn with a line through the vertical center.
 
-### Canvas.Format.Align := "Left"
-Represents the current text alignment of the format (align style). Can be set to change the current text alignment.
+### Canvas.Font.Align := "Left"
+Represents the current text alignment of the font (align style). Can be set to change the current text alignment.
 
 Align styles are one of the following values:
 

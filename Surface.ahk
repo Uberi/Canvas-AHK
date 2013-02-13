@@ -180,9 +180,9 @@ class Surface
             ,"GdipGraphicsClear","Could not clear graphics")
     }
 
-    MeasureText(Format,Value,ByRef Width,ByRef Height) ;wip: streamline and sort
+    MeasureText(Font,Value,ByRef Width,ByRef Height) ;wip: streamline and sort
     {
-        this.CheckFormat(Format)
+        this.CheckFont(Font)
 
         VarSetCapacity(Rectangle,16,0)
         VarSetCapacity(Bounds,16)
@@ -190,9 +190,9 @@ class Surface
             ,"UPtr",this.pGraphics
             ,"WStr",Value ;string value
             ,"Int",-1 ;null terminated
-            ,"UPtr",Format.hFont ;font handle
+            ,"UPtr",Font.hFont ;font handle
             ,"UPtr",&Rectangle ;input bounds
-            ,"UPtr",Format.hFormat ;string format
+            ,"UPtr",Font.hFormat ;string format
             ,"UPtr",&Bounds ;output bounds
             ,"UPtr",0 ;output number of characters that can fit in input bounds
             ,"UPtr",0) ;output number of lines that can fit in input bounds
@@ -202,10 +202,10 @@ class Surface
         Return, this
     }
 
-    Text(Brush,Format,Value,X,Y,W = "",H = "") ;wip: streamline and sort
+    Text(Brush,Font,Value,X,Y,W = "",H = "") ;wip: streamline and sort
     {
         this.CheckBrush(Brush)
-        this.CheckFormat(Format)
+        this.CheckFont(Font)
 
         ;determine dimensions automatically if not specified
         If (W = "")
@@ -225,9 +225,9 @@ class Surface
             ,"UPtr",this.pGraphics ;graphics handle
             ,"WStr",Value ;string value
             ,"Int",-1 ;null terminated
-            ,"UPtr",Format.hFont ;font handle
+            ,"UPtr",Font.hFont ;font handle
             ,"UPtr",&Rectangle ;bounding rectangle
-            ,"UPtr",Format.hFormat ;string format
+            ,"UPtr",Font.hFormat ;string format
             ,"UPtr",Brush.pBrush) ;fill brush
             ,"GdipDrawString","Could not draw text")
     }
@@ -549,10 +549,10 @@ class Surface
             throw Exception("INVALID_INPUT",-2,"Invalid brush: " . Brush)
     }
 
-    CheckFormat(Format)
+    CheckFont(Font)
     {
-        If !(Format.hFontFamily && Format.hFont && Format.hFormat)
-            throw Exception("INVALID_INPUT",-2,"Invalid brush: " . Brush)
+        If !(Font.hFontFamily && Font.hFont && Font.hFormat)
+            throw Exception("INVALID_INPUT",-2,"Invalid font: " . Font)
     }
 
     CheckLine(X1,Y1,X2,Y2)
