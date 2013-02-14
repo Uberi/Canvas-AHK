@@ -180,7 +180,7 @@ class Surface
             ,"GdipGraphicsClear","Could not clear graphics")
     }
 
-    MeasureText(Font,Value,ByRef Width,ByRef Height) ;wip: streamline and sort
+    TextDimensions(Font,Value,ByRef Width,ByRef Height) ;wip: streamline and sort
     {
         this.CheckFont(Font)
 
