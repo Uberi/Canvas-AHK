@@ -24,15 +24,30 @@ class Font
         this[""].Underline := False
         this[""].Strikeout := False
 
-        this.CreateFont()
+        this.UpdateFontFamily()
+        this.UpdateFont()
     }
 
-    CreateFont()
+    UpdateFontFamily()
     {
+        ;delete previous font family if present
+        If this.hFontFamily
+            this.CheckStatus(DllCall("gdiplus\GdipDeleteFontFamily","UPtr",this.hFontFamily)
+                ,"GdipDeleteFontFamily","Could not delete font family")
+
         ;create font family
         hFontFamily := 0
         this.CheckStatus(DllCall("gdiplus\GdipCreateFontFamilyFromName","WStr",this.Typeface,"UPtr",0,"UPtr*",hFontFamily)
             ,"GdipCreateFontFamilyFromName","Could not create font family")
+        this.hFontFamily := hFontFamily
+    }
+
+    UpdateFont()
+    {
+        ;delete previous font if present
+        If this.hFont
+            this.CheckStatus(DllCall("gdiplus\GdipDeleteFont","UPtr",this.hFont)
+                ,"GdipDeleteFont","Could not delete font")
 
         ;determine font style
         Style := 0 ;FontStyle.FontStyleRegular
@@ -46,14 +61,8 @@ class Font
             Style |= 8 ;FontStyle.FontStyleStrikeout
 
         ;create font
-        hFont := 0, Result := DllCall("gdiplus\GdipCreateFont","UPtr",hFontFamily,"Float",this.Size,"Int",Style,"UInt",2,"UPtr*",hFont) ;Unit.UnitPixel
-        If Result != 0 ;Status.Ok
-        {
-            DllCall("gdiplus\GdipDeleteFontFamily","UPtr",hFontFamily) ;delete font family
-            this.CheckStatus(Result,"GdipCreateFont","Could not create font")
-        }
-
-        this.hFontFamily := hFontFamily
+        hFont := 0, this.CheckStatus(DllCall("gdiplus\GdipCreateFont","UPtr",this.hFontFamily,"Float",this.Size,"Int",Style,"UInt",2,"UPtr*",hFont) ;Unit.UnitPixel
+                ,"GdipCreateFont","Could not create font")
         this.hFont := hFont
     }
 
@@ -99,12 +108,18 @@ class Font
             If Value <= 0
                 throw Exception("INVALID_INPUT",-1,"Invalid size: " . Value)
             this[""].Size := Value
-            this.CreateFont() ;wip: delete old first
+            this.UpdateFont()
         }
-        Else If (Key = "Typeface" || Key = "Bold" || Key = "Italic" || Key = "Underline" || Key = "Strikeout")
+        Else If (Key = "Typeface")
+        {
+            this[""].Typeface := Value
+            this.UpdateFontFamily()
+            this.UpdateFont()
+        }
+        Else If (Key = "Bold" || Key = "Italic" || Key = "Underline" || Key = "Strikeout")
         {
             this[""][Key] := Value
-            this.CreateFont() ;wip: delete old first
+            this.UpdateFont()
         }
         Else If (Key = "Align")
         {
