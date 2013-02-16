@@ -54,7 +54,7 @@ class Pen
 
     __Get(Key)
     {
-        If (Key != "")
+        If (Key != "" && Key != "base")
             Return, this[""][Key]
     }
 
@@ -115,6 +115,11 @@ class Pen
         }
         this[""][Key] := Value
         Return, Value
+    }
+
+    StubCheckStatus(Result,Name,Message)
+    {
+        Return, this
     }
 
     CheckStatus(Result,Name,Message)

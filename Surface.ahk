@@ -26,8 +26,8 @@ class Surface
         ObjInsert(this,"",Object())
 
         ;create a memory device context for double buffering use
-        this.hMemoryDC := DllCall("CreateCompatibleDC","UPtr",0,"UPtr")
-        If !this.hMemoryDC
+        this.hDC := DllCall("CreateCompatibleDC","UPtr",0,"UPtr")
+        If !this.hDC
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create memory device context (error in CreateCompatibleDC)")
 
         If (Path = "")
@@ -36,13 +36,13 @@ class Surface
             this.LoadBitmap(Path)
 
         ;select the bitmap into the memory device context
-        this.hOriginalBitmap := DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hBitmap,"UPtr")
+        this.hOriginalBitmap := DllCall("SelectObject","UPtr",this.hDC,"UPtr",this.hBitmap,"UPtr")
         If !this.hOriginalBitmap
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not select bitmap into memory device context (error in SelectObject)")
 
         ;create a graphics object
         pGraphics := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hMemoryDC,"UPtr*",pGraphics)
+        this.CheckStatus(DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hDC,"UPtr*",pGraphics)
             ,"GdipCreateFromHDC","Could not create graphics object")
         this.pGraphics := pGraphics
 
@@ -110,7 +110,7 @@ class Surface
 
     __Get(Key)
     {
-        If (Key != "")
+        If (Key != "" && Key != "base")
             Return, this[""][Key]
     }
 
@@ -146,29 +146,29 @@ class Surface
         Result := DllCall("gdiplus\GdipDeleteGraphics","UPtr",this.pGraphics)
         If Result != 0 ;Status.Ok
         {
-            DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hOriginalBitmap,"UPtr") ;deselect the bitmap if present
+            DllCall("SelectObject","UPtr",this.hDC,"UPtr",this.hOriginalBitmap,"UPtr") ;deselect the bitmap if present
             DllCall("DeleteObject","UPtr",this.hBitmap) ;delete the bitmap
-            DllCall("DeleteDC","UPtr",this.hMemoryDC) ;delete the memory device context
+            DllCall("DeleteDC","UPtr",this.hDC) ;delete the memory device context
             this.CheckStatus(Result,"GdipDeleteGraphics","Could not delete graphics object")
         }
 
         ;deselect the bitmap if present
-        If !DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",this.hOriginalBitmap,"UPtr")
+        If !DllCall("SelectObject","UPtr",this.hDC,"UPtr",this.hOriginalBitmap,"UPtr")
         {
             DllCall("DeleteObject","UPtr",this.hBitmap) ;delete the bitmap
-            DllCall("DeleteDC","UPtr",this.hMemoryDC) ;delete the memory device context
+            DllCall("DeleteDC","UPtr",this.hDC) ;delete the memory device context
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not deselect bitmap from memory device context (error in SelectObject)")
         }
 
         ;delete the bitmap
         If !DllCall("DeleteObject","UPtr",this.hBitmap)
         {
-            DllCall("DeleteDC","UPtr",this.hMemoryDC) ;delete the memory device context
+            DllCall("DeleteDC","UPtr",this.hDC) ;delete the memory device context
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete bitmap (error in DeleteObject)")
         }
 
         ;delete the memory device context
-        If !DllCall("DeleteDC","UPtr",this.hMemoryDC)
+        If !DllCall("DeleteDC","UPtr",this.hDC)
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete memory device context (error in DeleteDC)")
     }
 
@@ -180,29 +180,7 @@ class Surface
             ,"GdipGraphicsClear","Could not clear graphics")
     }
 
-    TextDimensions(Font,Value,ByRef Width,ByRef Height) ;wip: streamline and sort
-    {
-        this.CheckFont(Font)
-
-        VarSetCapacity(Rectangle,16,0)
-        VarSetCapacity(Bounds,16)
-        this.CheckStatus(DllCall("gdiplus\GdipMeasureString"
-            ,"UPtr",this.pGraphics
-            ,"WStr",Value ;string value
-            ,"Int",-1 ;null terminated
-            ,"UPtr",Font.hFont ;font handle
-            ,"UPtr",&Rectangle ;input bounds
-            ,"UPtr",Font.hFormat ;string format
-            ,"UPtr",&Bounds ;output bounds
-            ,"UPtr",0 ;output number of characters that can fit in input bounds
-            ,"UPtr",0) ;output number of lines that can fit in input bounds
-            ,"GdipMeasureString","Could not measure text bounds")
-        Width := NumGet(Bounds,8,"Float")
-        Height := NumGet(Bounds,12,"Float")
-        Return, this
-    }
-
-    Text(Brush,Font,Value,X,Y,W = "",H = "") ;wip: streamline and sort
+    Text(Brush,Font,Value,X,Y,W = "",H = "")
     {
         this.CheckBrush(Brush)
         this.CheckFont(Font)

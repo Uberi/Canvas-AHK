@@ -56,7 +56,7 @@ Gui, +LastFound
 v := new Canvas.Viewport(WinExist()).Attach(s)
 
 p := new Canvas.Pen(0x80FF0000,10)
-t := new Canvas.Pen(0xFF00FF00,3)
+t := new Canvas.Pen(0xFF00FF00,1)
 b := new Canvas.Brush(0xAA0000FF)
 
 Gui, Show, w400 h400, Canvas Demo
@@ -64,6 +64,12 @@ Return
 
 GuiClose:
 ExitApp
+
+Tab::
+f.Measure("Earthrise: Dawn of a new era",W,H)
+s.DrawRectangle(t,30,80,W,H)
+v.Refresh()
+Return
 
 Space::
 s.Clear(0xFFFFFF00)
@@ -107,7 +113,6 @@ class Canvas
 
     Lenient()
     {
-        ;wip: do this for all the modules
         this.Surface.CheckStatus := this.Surface.StubCheckStatus
         this.Surface.CheckPen := this.Surface.StubCheckPen
         this.Surface.CheckBrush := this.Surface.StubCheckBrush
@@ -117,6 +122,14 @@ class Canvas
         this.Surface.CheckSector := this.Surface.StubCheckSector
         this.Surface.CheckPoint := this.Surface.StubCheckPoint
         this.Surface.CheckPoints := this.Surface.StubCheckPoints
+
+        this.Viewport.CheckStatus := this.Viewport.StubCheckStatus
+
+        this.Pen.CheckStatus := this.Pen.StubCheckStatus
+
+        this.Brush.CheckStatus := this.Brush.StubCheckStatus
+
+        this.Font.CheckStatus := this.Font.StubCheckStatus
     }
 
     #Include Viewport.ahk

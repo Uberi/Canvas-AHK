@@ -211,11 +211,6 @@ Draws a series of connected lines with `Pen` (pen), at coordinates defined by `P
 
 Returns the surface object.
 
-### Canvas.Surface.TextDimensions(Font,Value,ByRef Width,ByRef Height)
-Determines the width and height of the bounding box of `Value` (text) if it were to be drawn with `Font` (font). The resulting numbers can be found in the variables passed as `Width` and `Height`.
-
-Returns the surface object.
-
 ### Canvas.Surface.Text(Brush,Font,Value,X,Y,W = "",H = "")
 Draws `Text` (text) with `Brush` (brush) and `Font` (font), at X-axis coordinate `X` (units) and baseline Y-axis coordinate `Y` (units). If width `W` (units) is specified, the text is drawn with that width. If height `H` (units) is specified, the text is drawn with that height. Otherwise, both dimensions are assumed to be those of the text's bounding box.
 
@@ -365,3 +360,8 @@ Align styles are one of the following values:
 | Left   | The text is drawn starting at the X-axis coordinate specified.                        |
 | Center | The text is drawn with the center on the X-axis coordinate specified.                 |
 | Right  | The text is drawn starting at the left and ending at the X-axis coordinate specified. |
+
+### Canvas.Font.Measure(Value,ByRef Width,ByRef Height)
+Determines the width and height of the bounding box of `Value` (text) if it were to be drawn with the font. The resulting numbers can be found in the variables passed as `Width` and `Height`.
+
+Returns the font object.

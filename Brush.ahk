@@ -46,7 +46,7 @@ class Brush
 
     __Get(Key)
     {
-        If (Key != "")
+        If (Key != "" && Key != "base")
             Return, this[""][Key]
     }
 
@@ -61,6 +61,11 @@ class Brush
         }
         this[""][Key] := Value
         Return, Value
+    }
+
+    StubCheckStatus(Result,Name,Message)
+    {
+        Return, this
     }
 
     CheckStatus(Result,Name,Message)

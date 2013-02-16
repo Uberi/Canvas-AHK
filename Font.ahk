@@ -1,5 +1,21 @@
 class Font
 {
+    static _ := Canvas.Font.Initialize()
+
+    Initialize()
+    {
+        ;create device context for graphics object
+        this.hDC := DllCall("CreateCompatibleDC","UPtr",0,"UPtr")
+        If !this.hDC
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create device context (error in CreateCompatibleDC)")
+
+        ;create a graphics object
+        pGraphics := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hDC,"UPtr*",pGraphics)
+            ,"GdipCreateFromHDC","Could not create graphics object")
+        this.pGraphics := pGraphics
+    }
+
     __New(Typeface,Size)
     {
         If Size Is Not Number
@@ -75,6 +91,7 @@ class Font
             DllCall("gdiplus\GdipDeleteFontFamily","UPtr",this.hFontFamily) ;delete font family
             DllCall("gdiplus\GdipDeleteStringFormat","UPtr",this.hFormat) ;delete string format
             this.CheckStatus(Result,"GdipDeleteFont","Could not delete font")
+            Return
         }
 
         ;delete font family
@@ -83,6 +100,7 @@ class Font
         {
             DllCall("gdiplus\GdipDeleteStringFormat","UPtr",this.hFormat) ;delete string format
             this.CheckStatus(Result,"GdipDeleteFontFamily","Could not delete font family")
+            Return
         }
 
         ;delete string format
@@ -92,7 +110,7 @@ class Font
 
     __Get(Key)
     {
-        If (Key != "")
+        If (Key != "" && Key != "base")
             Return, this[""][Key]
     }
 
@@ -132,6 +150,31 @@ class Font
         Else
             this[""][Key] := Value
         Return, Value
+    }
+
+    Measure(Value,ByRef Width,ByRef Height)
+    {
+        VarSetCapacity(Rectangle,16,0)
+        VarSetCapacity(Bounds,16)
+        this.CheckStatus(DllCall("gdiplus\GdipMeasureString"
+            ,"UPtr",this.base.pGraphics
+            ,"WStr",Value ;string value
+            ,"Int",-1 ;null terminated
+            ,"UPtr",this.hFont ;font handle
+            ,"UPtr",&Rectangle ;input bounds
+            ,"UPtr",this.hFormat ;string format
+            ,"UPtr",&Bounds ;output bounds
+            ,"UPtr",0 ;output number of characters that can fit in input bounds
+            ,"UPtr",0) ;output number of lines that can fit in input bounds
+            ,"GdipMeasureString","Could not measure text bounds")
+        Width := NumGet(Bounds,8,"Float")
+        Height := NumGet(Bounds,12,"Float")
+        Return, this
+    }
+
+    StubCheckStatus(Result,Name,Message)
+    {
+        Return, this
     }
 
     CheckStatus(Result,Name,Message)

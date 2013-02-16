@@ -60,7 +60,7 @@ class Viewport
             ,"UPtr",this.hWindow ;window handle
             ,"UPtr",this.pCallback ;callback pointer
             ,"UPtr",this.hWindow ;subclass ID
-            ,"UPtr",Surface.hMemoryDC) ;arbitrary data to pass to this particular subclass callback and ID
+            ,"UPtr",Surface.hDC) ;arbitrary data to pass to this particular subclass callback and ID
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window subclass (error in SetWindowSubclass)")
         this.pGraphics := Surface.pGraphics
         this.Width := Surface.Width
@@ -104,7 +104,7 @@ class Viewport
         Return, this
     }
 
-    PaintCallback(Message,wParam,lParam,hWindow,hMemoryDC)
+    PaintCallback(Message,wParam,lParam,hWindow,hDC)
     {
         Critical
         If Message != 0xF ;WM_PAINT
@@ -112,8 +112,8 @@ class Viewport
 
         ;prepare window for painting
         VarSetCapacity(PaintStruct,A_PtrSize + 60)
-        hDC := DllCall("BeginPaint","UPtr",hWindow,"UPtr",&PaintStruct,"UPtr")
-        If !hDC
+        hWindowDC := DllCall("BeginPaint","UPtr",hWindow,"UPtr",&PaintStruct,"UPtr")
+        If !hWindowDC
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not prepare window for painting (error in BeginPaint)")
 
         ;obtain dimensions of update region
@@ -123,12 +123,17 @@ class Viewport
         H := NumGet(PaintStruct,A_PtrSize + 16,"UInt") - Y
 
         ;transfer bitmap from memory device context to window device context
-        If hMemoryDC && !DllCall("BitBlt","UPtr",hDC,"Int",X,"Int",Y,"Int",W,"Int",H,"UPtr",hMemoryDC,"Int",X,"Int",Y,"UInt",0xCC0020) ;SRCCOPY
+        If hDC && !DllCall("BitBlt","UPtr",hWindowDC,"Int",X,"Int",Y,"Int",W,"Int",H,"UPtr",hDC,"Int",X,"Int",Y,"UInt",0xCC0020) ;SRCCOPY
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not transfer bitmap data from memory device context to window device context (error in BitBlt)")
 
         ;finish painting window
         DllCall("EndPaint","UPtr",hWindow,"UPtr",&PaintStruct)
         Return, 0
+    }
+
+    StubCheckStatus(Result,Name,Message)
+    {
+        Return, this
     }
 
     CheckStatus(Result,Name,Message)
