@@ -30,6 +30,7 @@ GuiClose:
 ExitApp
 */
 
+;wip: consider color transformations using http://msdn.microsoft.com/en-us/library/windows/desktop/ms533875(v=vs.85).aspx
 ;wip: effects support with http://msdn.microsoft.com/en-us/library/windows/desktop/ms533971(v=vs.85).aspx
 ;wip: opengl backend
 ;wip: ASCII backend with drawing functions here: http://free.pages.at/easyfilter/bresenham.html

@@ -2,6 +2,8 @@ Canvas-AHK
 ==========
 Canvas-AHK is a portable, high level drawing library written for AutoHotkey, designed for use in moderately graphics intensive applications outputting to screens or image files.
 
+The source code can be found at [GitHub](https://github.com/Uberi/Canvas-AHK).
+
 Overview
 --------
 * Surfaces are where things are drawn.
@@ -101,267 +103,28 @@ Surfaces
 --------
 Surfaces represent and allow the manipulation of graphics properties and data. This may include drawing, painting, and more.
 
-### Canvas.Surface.__New(Width,Height,Path = "")
-Creates a surface object representing a set of graphics properties and data, having a width of `Width` (units) and height `Height` (units).
-
-If `Path` is not a blank string, it is interpreted as a path to a supported image file, which will be loaded as the contents of the surface. In this case, the `Width` and `Height` parameters are ignored, and instead the dimensions of the surface are determined by the dimensions of the image. ;wip: document supported image formats
-
-Returns the new surface object.
-
-### Canvas.Surface.Interpolation := "None"
-Represents the current interpolation mode of the surface (interpolation style). Interpolation modes define the appearance of surfaces when scaled.
-
-Interpolation styles are one of the following values:
-
-| Style  | Effect                                                                                                         |
-|:-------|:---------------------------------------------------------------------------------------------------------------|
-| None   | Pixels are sampled according to the nearest neighbor. Suitable for fast, low quality, or pixelated effects.    |
-| Linear | Pixels are linearly sampled across the source values. Suitable for medium quality and reasonably fast effects. |
-| Cubic  | Pixels are sampled according to a cubic spline. Suitable for high quality, slower effects.                     |
-
-### Canvas.Surface.Smooth := "None"
-Represents the current smooth mode of the surface (smooth style). Smooth modes define the appearance and antialiasing of objects drawn onto the surface.
-
-Smooth styles are one of the following values:
-
-| Style | Effect                                                                                          |
-|:------|:------------------------------------------------------------------------------------------------|
-| None  | Objects are not smoothed or antialiased. Suitable for fast, low quality, or pixelated effects.  |
-| Good  | Objects are smoothed and antialiased at medium quality. Suitable for reasonably fast effects.   |
-| Best  | Objects are smoothed and antialiased at high quality. Suitable for slower but smoother effects. |
-
-### Canvas.Surface.Width
-The width of the surface (units). Should not be modified.
-
-### Canvas.Surface.Height
-The height of the surface (units). Should not be modified.
-
-### Canvas.Surface.Clear(Color = 0x00000000)
-Clears the entire surface to a color defined by `Color` (color).
-
-Returns the surface object.
-
-### Canvas.Surface.Draw(Surface,X = 0,Y = 0,W = "",H = "",SourceX = 0,SourceY = 0,SourceW = "",SourceH = "") ;wip: streamline
-Draws the contents of `Surface` (surface) starting from X-axis coordinate `SourceX` (units) and Y-axis coordinate `SourceY` (units), with width `SourceW` (units) and height `SourceH` (units), at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units).
-
-Returns the surface object.
-
-### Canvas.Surface.DrawArc(Pen,X,Y,W,H,Start,Sweep)
-Draws an arc of an ellipse at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units), starting at `Start` (angle) and sweeping for `Sweep` (angle). The coordinates and dimensions define the bounding rectangle of the ellipse if it were to be drawn in full.
-
-Returns the surface object.
-
-### Canvas.DrawCurve(Pen,Points,Closed = False,Tension = 1)
-Draws a cardinal spline as a curved line with `Pen` (pen), passing through each point in `Points` (point set). If `Closed` (boolean) is set, the curve will be drawn as the outline of a closed shape. Otherwise, the curve is open. The curve's bend flexibility is denoted by `Tension` (0 to 1 inclusive), where 0 results in straight lines between points and 1 results in a Catmull-Rom/neutral spline. Tension is proportional to the length of each tangent.
-
-Returns the surface object.
-
-### Canvas.Surface.DrawEllipse(Pen,X,Y,W,H)
-Draws the outline of an ellipse at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units). The coordinates and dimensions define the bounding box of the ellipse.
-
-Returns the surface object.
-
-### Canvas.Surface.DrawPie(Pen,X,Y,W,H,Start,Sweep)
-Draws the outline of a pie (an arc with lines leading from the end to the center) of an ellipse with `Pen` (pen) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units), starting at `Start` (angle) and sweeping for `Sweep` (angle). The coordinates and dimensions define the bounding rectangle of the ellipse if it were to be drawn in full.
-
-Returns the surface object.
-
-### Canvas.Surface.DrawPolygon(Pen,Points)
-Draws the outline of a closed polygon with `Pen` (pen), with the vertices defined by `Points` (point set).
-
-Returns the surface object.
-
-### Canvas.Surface.DrawRectangle(Pen,X,Y,W,H)
-Draws the outline of a rectangle with `Pen` (pen) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units).
-
-Returns the surface object.
-
-### Canvas.Surface.FillCurve(Brush,Points)
-Fills the area of a closed cardinal spline with `Brush` (brush), passing through each point in `Points` (point set).
-
-Returns the surface object.
-
-### Canvas.Surface.FillEllipse(Brush,X,Y,W,H)
-Fills the area of an ellipse with `Brush` (brush) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units). The coordinates and dimensions define the bounding rectangle of the ellipse.
-
-Returns the surface object.
-
-### Canvas.Surface.FillPie(Brush,X,Y,W,H,Start,Sweep)
-Fills the area of a pie (an arc with lines leading from the end to the center) of an ellipse with `Brush` (brush) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units), starting at `Start` (angle) and sweeping for `Sweep` (angle). The coordinates and dimensions define the bounding rectangle of the ellipse if it were to be drawn in full.
-
-Returns the surface object.
-
-### Canvas.Surface.FillPolygon(Brush,Points)
-Fills the area of a closed polygon with `Brush` (brush), with the vertices defined by `Points` (point set).
-
-Returns the surface object.
-
-### Canvas.Surface.FillRectangle(Brush,X,Y,W,H)
-Fills the area of a rectangle with `Brush` (brush) at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units).
-
-Returns the surface object.
-
-### Canvas.Surface.Line(Pen,X1,Y1,X2,Y2)
-Draws a single line with `Pen` (pen), starting at X-axis coordinate `X1` (units) and Y-axis coordinate `Y1` (units), ending at X-axis coordinate `X2` (units) and Y-axis coordinate `Y2` (units).
-
-Returns the surface object.
-
-### Canvas.Surface.Lines(Pen,Points)
-Draws a series of connected lines with `Pen` (pen), at coordinates defined by `Points` (point set).
-
-Returns the surface object.
-
-### Canvas.Surface.Text(Brush,Font,Value,X,Y,W = "",H = "")
-Draws `Text` (text) with `Brush` (brush) and `Font` (font), at X-axis coordinate `X` (units) and baseline Y-axis coordinate `Y` (units). If width `W` (units) is specified, the text is drawn with that width. If height `H` (units) is specified, the text is drawn with that height. Otherwise, both dimensions are assumed to be those of the text's bounding box.
-
-### Canvas.Surface.Push()
-Pushes the current transformation state onto the transform stack. The transformation state includes the current translation, rotation, and scaling.
-
-Returns the surface object.
-
-### Canvas.Surface.Pop()
-Pops the top entry of the transform stack off and sets the current transformation state to the entry's state.
-
-Returns the surface object.
-
-### Canvas.Surface.Translate(X,Y)
-Translates the current transformation state by `X` (units) along the X-axis and `Y` (units) along the Y-axis.
-
-Returns the surface object.
-
-### Canvas.Surface.Rotate(Angle)
-Rotates the current transformation state by `Angle` (angle).
-
-Returns the surface object.
-
-### Canvas.Surface.Scale(X,Y)
-Scales the current transformation state by a factor of `X` (units) along the X-axis and `Y` (units) along the Y-axis.
+See the [Surface reference](Modules/Surface.md) for complete documentation about this class.
 
 Viewports
 ---------
 Viewports represent output displays. This may include windows, controls, or the entire screen.
 
-Surfaces attached to viewports will have their contents displayed in the viewport.
-
-### Canvas.Viewport.__New(hWindow)
-Creates a viewport object representing a window referenced by the window handle `hWindow` (hwnd).
-
-Returns the new viewport object.
-
-### Canvas.Viewport.Attach(Surface)
-Attaches surface `Surface` (Canvas.Surface) to the viewport so that it is displayed by the viewport.
-
-Returns the viewport object.
-
-### Canvas.Viewport.Refresh(X = 0,Y = 0,W = 0,H = 0)
-Refreshes the viewport to reflect changes in a region of its attached surface defined by X-axis coordinate `X` (positive or zero units), Y-axis coordinate `Y` (positive or zero units), width `W` (positive or zero units), and height `H` (positive or zero units).
-
-If `W` is zero, it will be interpreted as the width of the currently attached surface (Canvas.Surface.Width). If `H` is zero, it will be interpreted as the height of the currently attached surface (Canvas.Surface.Height).
-
-Returns the viewport object.
+See the [Viewport reference](Modules/Viewport.md) for complete documentation about this class.
 
 Pens
 ----
 Pens represent drawing properties such as color or width, and are used to draw the outlines of shapes in graphics operations.
 
-### Canvas.Pen.__New(Color = 0xFFFFFFFF,Width = 1)
-Creates a pen object representing a set of drawing properties, with color defined by `Color` (color) and width defined by `Width` (units).
-
-Returns the new pen object.
-
-### Canvas.Pen.Color
-Represents the current color of the pen (color). Can be set to change the current color.
-
-### Canvas.Pen.Width
-Represents the current width of the pen (units). Can be set to change the current width.
-
-### Canvas.Pen.Join := "Miter"
-Represents the current join style of the pen (join style). Can be set to change the current join style. Join styles define how the points where lines join are displayed when drawing multiple connected lines.
-
-Join styles are one of the following values:
-
-| Style | Effect                                                                                      |
-|:------|:--------------------------------------------------------------------------------------------|
-| Miter | Extend the outer edges of the lines being joined so that they meet, forming a sharp corner. |
-| Bevel | Clips the intersection of the outer edges such that it forms a cut corner.                  |
-| Round | Fills the intersection of the outer edges with part of an ellipse.                          |
-
-### Canvas.Pen.Type := "Solid"
-Represents the current type of the pen (type style). Can be set to change the current type style. Type styles define the appearance of the pen, such as stippling/dashing.
-
-| Style   | Effect                                                                      |
-|:--------|:----------------------------------------------------------------------------|
-| Solid   | Continuous, unbroken lines.                                                 |
-| Dash    | Longer line segments divided by shorter breaks at regular intervals.        |
-| Dot     | Dots spaced at regular short intervals along the line.                      |
-| DashDot | Alternation between longer line segments and dots at equal short intervals. |
-
-### Canvas.Pen.StartCap := "Flat"
-Represents the start cap style of the pen (cap style). Can be set to change the current start cap style. Start cap styles define how the starting points of lines are displayed.
-
-Cap styles are one of the following values:
-
-| Style    | Effect                                                  |
-|:---------|:--------------------------------------------------------|
-| Flat     | Flat end at the point.                                  |
-| Square   | Flat end past the point by half the width of the pen.   |
-| Round    | Round end with center of rounding at the point.         |
-| Triangle | Tapered protrusion at the point, aligned with the line. |
-
-### Canvas.Pen.EndCap := "Flat"
-Represents the end cap style of the pen (cap style). Can be set to change the current end cap style. End cap styles define how the ending points of lines are displayed.
+See the [Pen reference](Modules/Pen.md) for complete documentation about this class.
 
 Brushes
 -------
 Brushes represent fill properties such as color or texture, and are used to fill the interior of shapes in graphics operations.
 
-### Canvas.Brush.__New(Color = 0xFFFFFFFF)
-Creates a brush object representing a set of fill properties, with color defined by `Color` (color).
-
-Returns the new brush object.
-
-### Canvas.Brush.Color
-Represents the current color of the brush (color). Can be set to change the current color.
+See the [Brush reference](Modules/Brush.md) for complete documentation about this class.
 
 Font
 ----
 Fonts represent text properties such as typeface and line height, and are used to draw text in graphics operations.
 
-### Canvas.Font.__New(Typeface,Size)
-Creates a font object representing a set of text properties, with typeface defined by `Typeface` (string) and font size defined by `Size` (positive real number). The typeface must exist on the current system.
-
-Returns the new font object.
-
-### Canvas.Font.Typeface
-Represents the current typeface of the font (string). Can be set to change the current typeface.
-
-### Canvas.Font.Size
-Represents the current line height of the font (positive real number). Can be set to change the current line height.
-
-### Canvas.Font.Bold := False
-Represents whether the font is currently bold (boolean). Can be set to change whether the font is currently bold. Bold text is drawn in a heavier weight.
-
-### Canvas.Font.Italic := False
-Represents whether the font is currently italic (boolean). Can be set to change whether the font is currently italic. Italic text is drawn at an angle relative to the baseline.
-
-### Canvas.Font.Underline := False
-Represents whether the font is currently underlined (boolean). Can be set to change whether the font is currently underlined. Underlined text is drawn with a line underneath.
-
-### Canvas.Font.Strikeout := False
-Represents whether the font is currently struck out (boolean). Can be set to change whether the font is currently struck out. Struck out text is drawn with a line through the vertical center.
-
-### Canvas.Font.Align := "Left"
-Represents the current text alignment of the font (align style). Can be set to change the current text alignment.
-
-Align styles are one of the following values:
-
-| Style  | Effect                                                                                |
-|:-------|:--------------------------------------------------------------------------------------|
-| Left   | The text is drawn starting at the X-axis coordinate specified.                        |
-| Center | The text is drawn with the center on the X-axis coordinate specified.                 |
-| Right  | The text is drawn starting at the left and ending at the X-axis coordinate specified. |
-
-### Canvas.Font.Measure(Value,ByRef Width,ByRef Height)
-Determines the width and height of the bounding box of `Value` (text) if it were to be drawn with the font. The resulting numbers can be found in the variables passed as `Width` and `Height`.
-
-Returns the font object.
+See the [Font reference](Modules/Font.md) for complete documentation about this class.
