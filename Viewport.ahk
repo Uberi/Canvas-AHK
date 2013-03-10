@@ -106,7 +106,6 @@ class Viewport
 
     PaintCallback(Message,wParam,lParam,hWindow,hDC)
     {
-        Critical
         If Message != 0xF ;WM_PAINT
             Return, DllCall("Comctl32\DefSubclassProc","UPtr",hWindow,"UInt",Message,"UPtr",wParam,"UPtr",lParam,"UPtr") ;call the next handler in the window's subclass chain
 
@@ -116,15 +115,18 @@ class Viewport
         If !hWindowDC
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not prepare window for painting (error in BeginPaint)")
 
-        ;obtain dimensions of update region
-        X := NumGet(PaintStruct,A_PtrSize + 4,"UInt")
-        Y := NumGet(PaintStruct,A_PtrSize + 8,"UInt")
-        W := NumGet(PaintStruct,A_PtrSize + 12,"UInt") - X
-        H := NumGet(PaintStruct,A_PtrSize + 16,"UInt") - Y
+        If hDC ;surface attached
+        {
+            ;obtain dimensions of update region
+            X := NumGet(PaintStruct,A_PtrSize + 4,"UInt")
+            Y := NumGet(PaintStruct,A_PtrSize + 8,"UInt")
+            W := NumGet(PaintStruct,A_PtrSize + 12,"UInt") - X
+            H := NumGet(PaintStruct,A_PtrSize + 16,"UInt") - Y
 
-        ;transfer bitmap from memory device context to window device context
-        If hDC && !DllCall("BitBlt","UPtr",hWindowDC,"Int",X,"Int",Y,"Int",W,"Int",H,"UPtr",hDC,"Int",X,"Int",Y,"UInt",0xCC0020) ;SRCCOPY
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not transfer bitmap data from memory device context to window device context (error in BitBlt)")
+            ;transfer bitmap from memory device context to window device context
+            If !DllCall("BitBlt","UPtr",hWindowDC,"Int",X,"Int",Y,"Int",W,"Int",H,"UPtr",hDC,"Int",X,"Int",Y,"UInt",0xCC0020) ;SRCCOPY
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not transfer bitmap data from memory device context to window device context (error in BitBlt)")
+        }
 
         ;finish painting window
         DllCall("EndPaint","UPtr",hWindow,"UPtr",&PaintStruct)

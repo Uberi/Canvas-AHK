@@ -19,17 +19,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-;wip: following does not allow closing due to subclassing issue:
-/*
-Gui, +LastFound +Resize
-v := new Canvas.Viewport(WinExist())
-Gui, Show, w200 h200
-Sleep, 1000000
-Return
-GuiClose:
-ExitApp
-*/
-
 ;wip: consider color transformations using http://msdn.microsoft.com/en-us/library/windows/desktop/ms533875(v=vs.85).aspx
 ;wip: effects support with http://msdn.microsoft.com/en-us/library/windows/desktop/ms533971(v=vs.85).aspx
 ;wip: opengl backend
