@@ -182,6 +182,11 @@ class Surface
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete memory device context (error in DeleteDC)")
     }
 
+    Clone()
+    {
+        ;wip: clone the bitmap contents and settings
+    }
+
     Clear(Color = 0x00000000)
     {
         If Color Is Not Integer

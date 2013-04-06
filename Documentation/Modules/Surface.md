@@ -47,6 +47,11 @@ The width of the surface (units). Should not be modified.
 ### Canvas.Surface.Height
 The height of the surface (units). Should not be modified.
 
+### Canvas.Surface.Clone()
+Creates a new, independent surface with the same properties and contents as the current surface.
+
+Returns the new surface object.
+
 ### Canvas.Surface.Clear(Color = 0x00000000)
 Clears the entire surface to a color defined by `Color` (color).
 

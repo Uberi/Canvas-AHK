@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 TODO
 ----
 
-* surface cloning using Canvas.Surface.Clone()
 * consider color transformations using http://msdn.microsoft.com/en-us/library/windows/desktop/ms533875(v=vs.85).aspx
 * effects support with http://msdn.microsoft.com/en-us/library/windows/desktop/ms533971(v=vs.85).aspx
     * GpStatus WINGDIPAPI GdipDrawImageFX(GpGraphics *graphics, GpImage *image, GpRectF *source, GpMatrix *xForm, CGpEffect *effect, GpImageAttributes *imageAttributes, GpUnit srcUnit)
