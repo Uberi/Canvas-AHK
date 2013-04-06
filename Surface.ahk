@@ -46,10 +46,11 @@ class Surface
             ,"GdipCreateFromHDC","Could not create graphics object")
         this.pGraphics := pGraphics
 
-        this.Transforms := []
+        this.States := []
 
         this.Interpolation := "None"
         this.Smooth := "None"
+        this.Compositing := "Blend"
     }
 
     CreateBitmap(Width,Height)
@@ -116,12 +117,14 @@ class Surface
 
     __Set(Key,Value)
     {
-        static InterpolationStyles := Object("None",5 ;InterpolationMode.InterpolationModeNearestNeighbor
-                                            ,"Linear",6 ;InterpolationMode.InterpolationModeHighQualityBilinear
-                                            ,"Cubic",7) ;InterpolationMode.InterpolationModeHighQualityBicubic
-        static SmoothStyles := Object("None",3 ;SmoothingMode.SmoothingModeNone
-                                     ,"Good",4 ;SmoothingMode.SmoothingModeAntiAlias8x4
-                                     ,"Best",5) ;SmoothingMode.SmoothingModeAntiAlias8x8
+        static InterpolationStyles := {None:   5 ;InterpolationMode.InterpolationModeNearestNeighbor
+                                      ,Linear: 6 ;InterpolationMode.InterpolationModeHighQualityBilinear
+                                      ,Cubic:  7} ;InterpolationMode.InterpolationModeHighQualityBicubic
+        static SmoothStyles := {None: 3 ;SmoothingMode.SmoothingModeNone
+                               ,Good: 4 ;SmoothingMode.SmoothingModeAntiAlias8x4
+                               ,Best: 5} ;SmoothingMode.SmoothingModeAntiAlias8x8
+        static CompositingStyles := {Blend:     0 ;CompositingMode.CompositingModeSourceOver
+                                    ,Overwrite: 1} ;CompositingMode.CompositingModeSourceCopy
         If (Key = "Interpolation")
         {
             If !InterpolationStyles.HasKey(Value)
@@ -135,6 +138,13 @@ class Surface
                 throw Exception("INVALID_INPUT",-1,"Invalid smooth mode: " . Value)
             this.CheckStatus(DllCall("gdiplus\GdipSetSmoothingMode","UPtr",this.pGraphics,"UInt",SmoothStyles[Value])
                 ,"GdipSetSmoothingMode","Could not set smooth mode")
+        }
+        Else If (Key = "Compositing")
+        {
+            If !CompositingStyles.HasKey(Value)
+                throw Exception("INVALID_INPUT",-1,"Invalid compositing mode: " . Value)
+            this.CheckStatus(DllCall("gdiplus\GdipSetCompositingMode","UPtr",this.pGraphics,"UInt",CompositingStyles[Value])
+                ,"GdipSetCompositingMode","Could not set compositing mode")
         }
         this[""][Key] := Value
         Return, Value
@@ -349,72 +359,20 @@ class Surface
 
     Push()
     {
-        ;create temporary matrix to hold elements
-        pMatrix := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateMatrix","UPtr*",pMatrix)
-            ,"GdipCreateMatrix","Could not create matrix")
-
-        ;obtain current transformation matrix
-        Result := DllCall("gdiplus\GdipGetWorldTransform","UPtr",this.pGraphics,"UPtr",pMatrix)
-        If Result != 0 ;Status.Ok
-        {
-            DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            this.CheckStatus(Result,"GdipGetWorldTransform","Could not obtain transformation matrix")
-        }
-
-        ;push transformation matrix elements onto stack
-        Index := this.Transforms.MaxIndex()
-        If Index
-            Index ++
-        Else
-            Index := 1
-        this.Transforms.SetCapacity(Index,24)
-        Result := DllCall("gdiplus\GdipGetMatrixElements","UPtr",pMatrix,"UPtr",this.Transforms.GetAddress(Index)) ;obtain matrix elements
-        If Result != 0 ;Status.Ok
-        {
-            DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            this.CheckStatus(Result,"GdipGetMatrixElements","Could not obtain matrix elements")
-        }
-
-        ;delete temporary matrix
-        this.CheckStatus(DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
-            ,"GdipDeleteMatrix","Could not delete matrix")
-
+        State := 0
+        this.CheckStatus(DllCall("gdiplus\GdipSaveGraphics","UPtr",this.pGraphics,"UInt*",State) ;GraphicsState
+            ,"GdipSaveGraphics","Could not save graphics state")
+        this.States.Insert(State)
         Return, this
     }
 
     Pop()
     {
-        Index := this.Transforms.MaxIndex()
-        If !Index
+        If !this.States.HasKey(1) ;stack is empty
             throw Exception("INVALID_INPUT",-1,"Invalid transformation stack entries")
-
-        ;create temporary matrix to hold elements
-        pElements := this.Transforms.GetAddress(Index)
-        pMatrix := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateMatrix2"
-            ,"Float",NumGet(pElements + 0,0,"Float")
-            ,"Float",NumGet(pElements + 0,4,"Float")
-            ,"Float",NumGet(pElements + 0,8,"Float")
-            ,"Float",NumGet(pElements + 0,12,"Float")
-            ,"Float",NumGet(pElements + 0,16,"Float")
-            ,"Float",NumGet(pElements + 0,20,"Float")
-            ,"UPtr*",pMatrix)
-            ,"GdipCreateMatrix2","Could not create matrix")
-
-        ;set the current transformation matrix
-        Result := DllCall("gdiplus\GdipSetWorldTransform","UPtr",this.pGraphics,"UPtr",pMatrix)
-        If Result != 0 ;Status.Ok
-        {
-            DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix) ;delete temporary matrix
-            this.CheckStatus(Result,"GdipSetWorldTransform","Could not set transformation matrix")
-        }
-
-        ;delete temporary matrix
-        this.CheckStatus(DllCall("gdiplus\GdipDeleteMatrix","UPtr",pMatrix)
-            ,"GdipDeleteMatrix","Could not delete matrix")
-
-        this.Transforms.Remove(Index)
+        State := this.States.Remove()
+        this.CheckStatus(DllCall("gdiplus\GdipRestoreGraphics","UPtr",this.pGraphics,"UInt",State) ;GraphicsState
+            ,"GdipRestoreGraphics","Could not restore graphics state")
         Return, this
     }
 

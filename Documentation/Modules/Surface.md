@@ -33,6 +33,14 @@ Smooth styles are one of the following values:
 | Good  | Objects are smoothed and antialiased at medium quality. Suitable for reasonably fast effects.   |
 | Best  | Objects are smoothed and antialiased at high quality. Suitable for slower but smoother effects. |
 
+### Canvas.Surface.Compositing := "Blend"
+Represents the current compositing mode of the surface (compositing style). Compositing styles define how objects drawn onto the surface interact with existing data on the surface.
+
+| Style     | Effect                                                                                              |
+|:----------|:----------------------------------------------------------------------------------------------------|
+| Blend     | Objects are blended with the data already on the surface, calculated using individual alpha values. |
+| Overwrite | Objects are directly drawn onto the surface, without regard for what is already there.              |
+
 ### Canvas.Surface.Width
 The width of the surface (units). Should not be modified.
 
@@ -118,12 +126,12 @@ Returns the surface object.
 Draws `Text` (text) with `Brush` (brush) and `Font` (font), at X-axis coordinate `X` (units) and baseline Y-axis coordinate `Y` (units). If width `W` (units) is specified, the text is drawn with that width. If height `H` (units) is specified, the text is drawn with that height. Otherwise, both dimensions are assumed to be those of the text's bounding box.
 
 ### Canvas.Surface.Push()
-Pushes the current transformation state onto the transform stack. The transformation state includes the current translation, rotation, and scaling.
+Pushes the current surface state onto the state stack. The surface state includes the current translation, rotation, and scaling, as well as properties such as the smoothing mode.
 
 Returns the surface object.
 
 ### Canvas.Surface.Pop()
-Pops the top entry of the transform stack off and sets the current transformation state to the entry's state.
+Pops the top entry of the state stack off and sets the current surface state to the entry's state. The surface state includes the current translation, rotation, and scaling, as well as properties such as the smoothing mode.
 
 Returns the surface object.
 
