@@ -499,13 +499,13 @@ class Surface
     CheckLine(X1,Y1,X2,Y2)
     {
         If X1 Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . X1)
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate 1: " . X1)
         If Y1 Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . Y1)
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate 1: " . Y1)
         If X2 Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid width: " . X2)
+            throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate 2: " . X2)
         If Y2 Is Not Number
-            throw Exception("INVALID_INPUT",-2,"Invalid height: " . Y2)
+            throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate 2: " . Y2)
     }
 
     CheckRectangle(X,Y,W,H)
@@ -561,7 +561,7 @@ class Surface
             If PointX Is Not Number
                 throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX)
             If PointY Is Not Number
-                throw Exception("INVALID_INPUT",-2,"Invalid X-axis coordinate: " . PointX)
+                throw Exception("INVALID_INPUT",-2,"Invalid Y-axis coordinate: " . PointX)
 
             NumPut(PointX,PointArray,Offset,"Float"), Offset += 4
             NumPut(PointY,PointArray,Offset,"Float"), Offset += 4
