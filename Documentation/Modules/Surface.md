@@ -62,6 +62,16 @@ Draws the contents of `Surface` (surface) starting from X-axis coordinate `Sourc
 
 Returns the surface object.
 
+### Canvas.Surface.GetPixel(X,Y,ByRef Color)
+Obtains the color value of the pixel at X-axis coordinate `X` (integer units) and Y-axis coordinate `Y` (integer units) and stores it in `Color` (color). The coordinates must represent a pixel within the bitmap.
+
+Returns the surface object.
+
+### Canvas.Surface.SetPixel(X,Y,Color)
+Sets the color value of the pixel at X-axis coordinate `X` (integer units) and Y-axis coordinate `Y` (integer units). The coordinates must represent a pixel within the bitmap.
+
+Returns the surface object.
+
 ### Canvas.Surface.DrawArc(Pen,X,Y,W,H,Start,Sweep)
 Draws an arc of an ellipse at X-axis coordinate `X` (units) and Y-axis coordinate `Y` (units), with width `W` (units) and height `H` (units), starting at `Start` (angle) and sweeping for `Sweep` (angle). The coordinates and dimensions define the bounding rectangle of the ellipse if it were to be drawn in full.
 

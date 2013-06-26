@@ -225,6 +225,32 @@ class Surface
             ,"GdipDrawString","Could not draw text")
     }
 
+    GetPixel(X,Y,ByRef Color)
+    {
+        this.CheckPoint(X,Y)
+        If (X < 0 || X > this.Width)
+            throw Exception("INVALID_INPUT",-1,"Invalid X-axis coordinate: " . X)
+        If (Y < 0 || Y > this.Height)
+            throw Exception("INVALID_INPUT",-1,"Invalid Y-axis coordinate: " . Y)
+
+        Return, this.CheckStatus(DllCall("gdiplus\GdipBitmapGetPixel","UPtr",this.hBitmap,"Int",X,"Int",Y,"UInt*",Color)
+            ,"GdipBitmapGetPixel","Could not obtain pixel from bitmap")
+    }
+
+    SetPixel(X,Y,Color)
+    {
+        this.CheckPoint(X,Y)
+        If (X < 0 || X > this.Width)
+            throw Exception("INVALID_INPUT",-1,"Invalid X-axis coordinate: " . X)
+        If (Y < 0 || Y > this.Height)
+            throw Exception("INVALID_INPUT",-1,"Invalid Y-axis coordinate: " . Y)
+        If Color Is Not Integer
+            throw Exception("INVALID_INPUT",-1,"Invalid color: " . Color)
+
+        Return, this.CheckStatus(DllCall("gdiplus\GdipBitmapSetPixel","UPtr",this.hBitmap,"Int",X,"Int",Y,"UInt",Color)
+            ,"GdipBitmapSetPixel","Could not set bitmap pixel")
+    }
+
     Draw(Surface,X = 0,Y = 0,W = "",H = "",SourceX = 0,SourceY = 0,SourceW = "",SourceH = "") ;wip: streamline
     {
         If !Surface.hBitmap

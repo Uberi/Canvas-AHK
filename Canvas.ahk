@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 TODO
 ----
 
+* console output module with colors by reading the bitmap, console functions at http://msdn.microsoft.com/en-us/library/windows/desktop/ms682073(v=vs.85).aspx
 * consider color transformations using http://msdn.microsoft.com/en-us/library/windows/desktop/ms533875(v=vs.85).aspx
 * effects support with http://msdn.microsoft.com/en-us/library/windows/desktop/ms533971(v=vs.85).aspx
     * GpStatus WINGDIPAPI GdipDrawImageFX(GpGraphics *graphics, GpImage *image, GpRectF *source, GpMatrix *xForm, CGpEffect *effect, GpImageAttributes *imageAttributes, GpUnit srcUnit)
@@ -33,7 +34,7 @@ TODO
 * combine the draw* and fill* functions: DrawPie(Pen) and FillPie(Brush) -> Pie(Pen) and Pie(Brush)
 * fold pens into brushes; allow brushes to define widths, fills, etc.
 * add hatch brush, texture brush, and linear/radial gradient brush capabilities to Brush class
-* use CachedBitmap for animations: http://msdn.microsoft.com/en-us/library/ms533975(v=vs.85).aspx
+* use CachedBitmap for animations or faster drawing: http://msdn.microsoft.com/en-us/library/ms533975(v=vs.85).aspx
 */
 
 /*
