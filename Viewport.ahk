@@ -25,10 +25,10 @@ class Viewport
     {
         this.hWindow := hWindow
 
-        ;obtain a handle to the window device context
-        this.hDC := DllCall("GetDC","UPtr",hWindow,"UPtr")
-        If !this.hDC
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not obtain window device context (error in GetDC)")
+        ;create a memory device context for double buffering use
+        this.hMemoryDC := DllCall("CreateCompatibleDC","UPtr",0,"UPtr")
+        If !this.hMemoryDC
+            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create memory device context (error in CreateCompatibleDC)")
 
         ;subclass window to override WM_PAINT
         this.pCallback := RegisterCallback(this.PaintCallback,"Fast",6)
@@ -46,10 +46,6 @@ class Viewport
         If !DllCall("Comctl32\RemoveWindowSubclass","UPtr",this.hWindow,"UPtr",this.pCallback,"UPtr",this.hWindow)
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not remove subclass from window (error in RemoveWindowSubclass)")
 
-        ;release the window device context
-        If !DllCall("ReleaseDC","UPtr",this.hWindow,"UPtr",this.hDC)
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not release window device context (error in ReleaseDC)")
-
         ;free paint callback
         DllCall("GlobalFree","UPtr",this.pCallback,"UPtr")
     }
@@ -60,9 +56,10 @@ class Viewport
             ,"UPtr",this.hWindow ;window handle
             ,"UPtr",this.pCallback ;callback pointer
             ,"UPtr",this.hWindow ;subclass ID
-            ,"UPtr",Surface.hDC) ;arbitrary data to pass to this particular subclass callback and ID
+            ,"UPtr",&this) ;arbitrary data to pass to this particular subclass callback and ID
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window subclass (error in SetWindowSubclass)")
         this.pGraphics := Surface.pGraphics
+        this.pBitmap := Surface.pBitmap
         this.Width := Surface.Width
         this.Height := Surface.Height
         Return, this
@@ -104,7 +101,7 @@ class Viewport
         Return, this
     }
 
-    PaintCallback(Message,wParam,lParam,hWindow,hDC)
+    PaintCallback(Message,wParam,lParam,hWindow,pInstance)
     {
         If Message != 0xF ;WM_PAINT
             Return, DllCall("Comctl32\DefSubclassProc","UPtr",hWindow,"UInt",Message,"UPtr",wParam,"UPtr",lParam,"UPtr") ;call the next handler in the window's subclass chain
@@ -115,7 +112,9 @@ class Viewport
         If !hWindowDC
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not prepare window for painting (error in BeginPaint)")
 
-        If hDC ;surface attached
+        this := Object(pInstance) ;obtain the instance
+
+        If this.pGraphics ;surface attached
         {
             ;obtain dimensions of update region
             X := NumGet(PaintStruct,A_PtrSize + 4,"UInt")
@@ -123,9 +122,27 @@ class Viewport
             W := NumGet(PaintStruct,A_PtrSize + 12,"UInt") - X
             H := NumGet(PaintStruct,A_PtrSize + 16,"UInt") - Y
 
+            ;create the GDI bitmap
+            hBitmap := 0
+            this.CheckStatus(DllCall("gdiplus\GdipCreateHBITMAPFromBitmap","UPtr",this.pBitmap,"UPtr*",hBitmap,"UInt",0x000000)
+                ,"GdipCreateHBITMAPFromBitmap","Could not convert GDI+ bitmap to GDI bitmap")
+
+            ;select the bitmap into the memory device context
+            hOriginalBitmap := DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",hBitmap,"UPtr")
+            If !hOriginalBitmap
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not select bitmap into memory device context (error in SelectObject)")
+
             ;transfer bitmap from memory device context to window device context
-            If !DllCall("BitBlt","UPtr",hWindowDC,"Int",X,"Int",Y,"Int",W,"Int",H,"UPtr",hDC,"Int",X,"Int",Y,"UInt",0xCC0020) ;SRCCOPY
+            If !DllCall("BitBlt","UPtr",hWindowDC,"Int",X,"Int",Y,"Int",W,"Int",H,"UPtr",this.hMemoryDC,"Int",X,"Int",Y,"UInt",0xCC0020) ;SRCCOPY
                 throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not transfer bitmap data from memory device context to window device context (error in BitBlt)")
+
+            ;deselect the bitmap from the memory device context
+            If !DllCall("SelectObject","UPtr",this.hMemoryDC,"UPtr",hOriginalBitmap,"UPtr")
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not deselect bitmap from memory device context (error in SelectObject)")
+
+            ;delete the bitmap
+            If !DllCall("DeleteObject","UPtr",hBitmap)
+                throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete bitmap (error in DeleteObject)")
         }
 
         ;finish painting window

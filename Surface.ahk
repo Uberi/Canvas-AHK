@@ -25,25 +25,15 @@ class Surface
     {
         ObjInsert(this,"",Object())
 
-        ;create a memory device context for double buffering use
-        this.hDC := DllCall("CreateCompatibleDC","UPtr",0,"UPtr")
-        If !this.hDC
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create memory device context (error in CreateCompatibleDC)")
-
         If (Path = "")
             this.CreateBitmap(Width,Height)
         Else
             this.LoadBitmap(Path)
 
-        ;select the bitmap into the memory device context
-        this.hOriginalBitmap := DllCall("SelectObject","UPtr",this.hDC,"UPtr",this.hBitmap,"UPtr")
-        If !this.hOriginalBitmap
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not select bitmap into memory device context (error in SelectObject)")
-
         ;create a graphics object
         pGraphics := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateFromHDC","UPtr",this.hDC,"UPtr*",pGraphics)
-            ,"GdipCreateFromHDC","Could not create graphics object")
+        this.CheckStatus(DllCall("gdiplus\GdipGetImageGraphicsContext","UPtr",this.pBitmap,"UPtr*",pGraphics)
+            ,"GdipGetImageGraphicsContext","Could not obtain graphics object")
         this.pGraphics := pGraphics
 
         this.States := []
@@ -60,25 +50,10 @@ class Surface
         If Height < 0
             throw Exception("INVALID_INPUT",-2,"Invalid height: " . Height)
 
-        ;set up BITMAPINFO structure
-        VarSetCapacity(BitmapInfo,40)
-        NumPut(40,BitmapInfo,0,"UInt") ;structure size
-        NumPut(Width,BitmapInfo,4,"UInt") ;bitmap width
-        NumPut(Height,BitmapInfo,8,"UInt") ;bitmap height
-        NumPut(1,BitmapInfo,12,"UShort") ;target device plane count
-        NumPut(32,BitmapInfo,14,"UInt") ;bits per pixel
-        NumPut(0,BitmapInfo,16,"UInt") ;BI_RGB: compression type
-        NumPut(0,BitmapInfo,20,"UInt") ;image size
-        NumPut(0,BitmapInfo,24,"UInt") ;horizontal resolution of target device
-        NumPut(0,BitmapInfo,28,"UInt") ;vertical resolution of target device
-        NumPut(0,BitmapInfo,32,"UInt") ;color index used count
-        NumPut(0,BitmapInfo,36,"UInt") ;color index required count
-
-        ;create the device independent bitmap
-        pBits := 0
-        this.hBitmap := DllCall("CreateDIBSection","UPtr",0,"UPtr",&BitmapInfo,"UInt",0,"UPtr*",pBits,"UPtr",0,"UInt",0) ;DIB_RGB_COLORS
-        If !this.hBitmap
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not create bitmap (error in CreateDIBSection)")
+        pBitmap := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromScan0","Int",Width,"Int",Height,"Int",0,"Int",0x26200A,"UPtr",0,"UPtr*",pBitmap) ;PixelFormat32bppARGB
+            ,"GdipCreateBitmapFromScan0","Could not create bitmap")
+        this.pBitmap := pBitmap
 
         this.Width := Width
         this.Height := Height
@@ -100,13 +75,15 @@ class Surface
         Height := 0
         this.CheckStatus(DllCall("gdiplus\GdipGetImageHeight","UPtr",pBitmap,"UInt*",Height)
             ,"GdipGetImageHeight","Could not obtain image height")
-        hBitmap := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateHBITMAPFromBitmap","UPtr",pBitmap,"UPtr*",hBitmap,"UPtr",0)
-            ,"GdipCreateHBITMAPFromBitmap","Could not obtain bitmap handle from bitmap pointer")
 
-        this.hBitmap := hBitmap
+        this.pBitmap := pBitmap
         this.Width := Width
         this.Height := Height
+    }
+
+    Save(Path) ;wip: streamline and sort
+    {
+        ;wip: maybe image saving functionality should be handled in a viewport-like object, with attach(), load(), save(), etc.
     }
 
     __Get(Key)
@@ -152,39 +129,24 @@ class Surface
 
     __Delete()
     {
-        ;delete the graphics object
+        ;delete graphics object
         Result := DllCall("gdiplus\GdipDeleteGraphics","UPtr",this.pGraphics)
         If Result != 0 ;Status.Ok
         {
-            DllCall("SelectObject","UPtr",this.hDC,"UPtr",this.hOriginalBitmap,"UPtr") ;deselect the bitmap if present
-            DllCall("DeleteObject","UPtr",this.hBitmap) ;delete the bitmap
-            DllCall("DeleteDC","UPtr",this.hDC) ;delete the memory device context
+            DllCall("gdiplus\GdipDisposeImage","UPtr",this.pBitmap) ;delete bitmap object
             this.CheckStatus(Result,"GdipDeleteGraphics","Could not delete graphics object")
         }
 
-        ;deselect the bitmap if present
-        If !DllCall("SelectObject","UPtr",this.hDC,"UPtr",this.hOriginalBitmap,"UPtr")
-        {
-            DllCall("DeleteObject","UPtr",this.hBitmap) ;delete the bitmap
-            DllCall("DeleteDC","UPtr",this.hDC) ;delete the memory device context
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not deselect bitmap from memory device context (error in SelectObject)")
-        }
-
-        ;delete the bitmap
-        If !DllCall("DeleteObject","UPtr",this.hBitmap)
-        {
-            DllCall("DeleteDC","UPtr",this.hDC) ;delete the memory device context
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete bitmap (error in DeleteObject)")
-        }
-
-        ;delete the memory device context
-        If !DllCall("DeleteDC","UPtr",this.hDC)
-            throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not delete memory device context (error in DeleteDC)")
+        ;delete bitmap object
+        this.CheckStatus(DllCall("gdiplus\GdipDisposeImage","UPtr",this.pBitmap)
+            ,"GdipDisposeImage","Could not delete bitmap pointer")
     }
 
     Clone()
     {
+        Copy := new this.base(this.Width,this.Height)
         ;wip: clone the bitmap contents and settings
+        Return, Copy
     }
 
     Clear(Color = 0x00000000)
@@ -233,7 +195,7 @@ class Surface
         If (Y < 0 || Y > this.Height)
             throw Exception("INVALID_INPUT",-1,"Invalid Y-axis coordinate: " . Y)
 
-        Return, this.CheckStatus(DllCall("gdiplus\GdipBitmapGetPixel","UPtr",this.hBitmap,"Int",X,"Int",Y,"UInt*",Color)
+        Return, this.CheckStatus(DllCall("gdiplus\GdipBitmapGetPixel","UPtr",this.pBitmap,"Int",X,"Int",Y,"UInt*",Color)
             ,"GdipBitmapGetPixel","Could not obtain pixel from bitmap")
     }
 
@@ -247,13 +209,13 @@ class Surface
         If Color Is Not Integer
             throw Exception("INVALID_INPUT",-1,"Invalid color: " . Color)
 
-        Return, this.CheckStatus(DllCall("gdiplus\GdipBitmapSetPixel","UPtr",this.hBitmap,"Int",X,"Int",Y,"UInt",Color)
+        Return, this.CheckStatus(DllCall("gdiplus\GdipBitmapSetPixel","UPtr",this.pBitmap,"Int",X,"Int",Y,"UInt",Color)
             ,"GdipBitmapSetPixel","Could not set bitmap pixel")
     }
 
     Draw(Surface,X = 0,Y = 0,W = "",H = "",SourceX = 0,SourceY = 0,SourceW = "",SourceH = "") ;wip: streamline
     {
-        If !Surface.hBitmap
+        If !Surface.pBitmap
             throw Exception("INVALID_INPUT",-1,"Invalid surface: " . Surface)
 
         If (W = "")
@@ -268,10 +230,7 @@ class Surface
         this.CheckRectangle(X,Y,W,H)
         this.CheckRectangle(SourceX,SourceY,SourceW,SourceH)
 
-        pBitmap := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromHBITMAP","UPtr",Surface.hBitmap,"UPtr",0,"UPtr*",pBitmap)
-            ,"GdipCreateBitmapFromHBITMAP","Could not obtain bitmap pointer from bitmap handle")
-        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawImageRectRect","UPtr",this.pGraphics,"UPtr",pBitmap
+        Return, this.CheckStatus(DllCall("gdiplus\GdipDrawImageRectRect","UPtr",this.pGraphics,"UPtr",Surface.pBitmap
             ,"Float",X,"Float",Y,"Float",W,"Float",H
             ,"Float",SourceX,"Float",SourceY,"Float",SourceW,"Float",SourceH
             ,"Int",2,"UPtr",0,"UPtr",0,"UPtr",0) ;Unit.UnitPixel
