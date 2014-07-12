@@ -4,10 +4,8 @@ Surfaces represent and allow the manipulation of graphics properties and data. T
 
 Surfaces are implemented in the Canvas.Surface class.
 
-### Canvas.Surface.__New(Width,Height,Path = "")
+### Canvas.Surface.__New(Width = 1,Height = 1)
 Creates a surface object representing a set of graphics properties and data, having a width of `Width` (units) and height `Height` (units).
-
-If `Path` is not a blank string, it is interpreted as a path to a supported image file, which will be loaded as the contents of the surface. In this case, the `Width` and `Height` parameters are ignored, and instead the dimensions of the surface are determined by the dimensions of the image. ;wip: document supported image formats
 
 Returns the new surface object.
 

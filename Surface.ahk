@@ -21,14 +21,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class Surface
 {
-    __New(Width,Height,Path = "") ;wip: move image loading code to Viewport-like Image class with attach() and load() and save()
+    __New(Width = 1,Height = 1)
     {
         ObjInsert(this,"",Object())
 
-        If (Path = "")
-            this.CreateBitmap(Width,Height)
-        Else
-            this.LoadBitmap(Path)
+        If Width < 1
+            throw Exception("INVALID_INPUT",-1,"Invalid width: " . Width)
+        If Height < 1
+            throw Exception("INVALID_INPUT",-1,"Invalid height: " . Height)
+
+        pBitmap := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromScan0","Int",Width,"Int",Height,"Int",0,"Int",0x26200A,"UPtr",0,"UPtr*",pBitmap) ;PixelFormat32bppARGB
+            ,"GdipCreateBitmapFromScan0","Could not create bitmap")
+        this.pBitmap := pBitmap
 
         ;create a graphics object
         pGraphics := 0
@@ -38,52 +43,12 @@ class Surface
 
         this.States := []
 
+        this.Width := Width
+        this.Height := Height
+
         this.Interpolation := "None"
         this.Smooth := "None"
         this.Compositing := "Blend"
-    }
-
-    CreateBitmap(Width,Height)
-    {
-        If Width < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid width: " . Width)
-        If Height < 0
-            throw Exception("INVALID_INPUT",-2,"Invalid height: " . Height)
-
-        pBitmap := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromScan0","Int",Width,"Int",Height,"Int",0,"Int",0x26200A,"UPtr",0,"UPtr*",pBitmap) ;PixelFormat32bppARGB
-            ,"GdipCreateBitmapFromScan0","Could not create bitmap")
-        this.pBitmap := pBitmap
-
-        this.Width := Width
-        this.Height := Height
-    }
-
-    LoadBitmap(Path)
-    {
-        Attributes := FileExist(Path)
-        If !Attributes ;path does not exist
-            throw Exception("INVALID_INPUT",-1,"Invalid path: " . Path)
-        If InStr(Attributes,"D") ;path is not a file
-            throw Exception("INVALID_INPUT",-1,"Invalid file: " . Path)
-        pBitmap := 0
-        this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromFile", "WStr",Path,"UPtr*",pBitmap) ;wip: should use higher level of exception as should CreateBitmap()
-            ,"GdipCreateBitmapFromFile","Could not create bitmap from file")
-        Width := 0
-        this.CheckStatus(DllCall("gdiplus\GdipGetImageWidth","UPtr",pBitmap,"UInt*",Width)
-            ,"GdipGetImageWidth","Could not obtain image width")
-        Height := 0
-        this.CheckStatus(DllCall("gdiplus\GdipGetImageHeight","UPtr",pBitmap,"UInt*",Height)
-            ,"GdipGetImageHeight","Could not obtain image height")
-
-        this.pBitmap := pBitmap
-        this.Width := Width
-        this.Height := Height
-    }
-
-    Save(Path) ;wip: streamline and sort
-    {
-        ;wip: maybe image saving functionality should be handled in a viewport-like object, with attach(), load(), save(), etc.
     }
 
     __Get(Key)
@@ -142,10 +107,41 @@ class Surface
             ,"GdipDisposeImage","Could not delete bitmap pointer")
     }
 
-    Clone()
+    Load(Path) ;wip: document this
+    {
+        Attributes := FileExist(Path)
+        If !Attributes ;path does not exist
+            throw Exception("INVALID_INPUT",-1,"Invalid path: " . Path)
+        If InStr(Attributes,"D") ;path is not a file
+            throw Exception("INVALID_INPUT",-1,"Invalid file: " . Path)
+
+        ;create bitmap and obtain dimensions
+        pBitmap := 0
+        this.CheckStatus(DllCall("gdiplus\GdipCreateBitmapFromFile", "WStr",Path,"UPtr*",pBitmap) ;wip: should use higher level of exception as should CreateBitmap()
+            ,"GdipCreateBitmapFromFile","Could not create bitmap from file")
+        Width := 0
+        this.CheckStatus(DllCall("gdiplus\GdipGetImageWidth","UPtr",pBitmap,"UInt*",Width)
+            ,"GdipGetImageWidth","Could not obtain image width")
+        Height := 0
+        this.CheckStatus(DllCall("gdiplus\GdipGetImageHeight","UPtr",pBitmap,"UInt*",Height)
+            ,"GdipGetImageHeight","Could not obtain image height")
+
+        this.pBitmap := pBitmap
+        this.Width := Width
+        this.Height := Height
+        Return, this
+    }
+
+    Save(Path)
+    {
+        ;wip: implement and document this
+        Return, this
+    }
+
+    Clone(Width = "",Height = "")
     {
         Copy := new this.base(this.Width,this.Height)
-        ;wip: clone the bitmap contents and settings
+        ;wip: clone the bitmap contents and settings and resize it
         Return, Copy
     }
 
@@ -213,7 +209,7 @@ class Surface
             ,"GdipBitmapSetPixel","Could not set bitmap pixel")
     }
 
-    Draw(Surface,X = 0,Y = 0,W = "",H = "",SourceX = 0,SourceY = 0,SourceW = "",SourceH = "") ;wip: streamline
+    Draw(Surface,X = 0,Y = 0,W = "",H = "",SourceX = 0,SourceY = 0,SourceW = "",SourceH = "")
     {
         If !Surface.pBitmap
             throw Exception("INVALID_INPUT",-1,"Invalid surface: " . Surface)

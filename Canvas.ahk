@@ -41,7 +41,8 @@ TODO
 #Warn All
 #Warn LocalSameAsGlobal, Off
 
-i := new Canvas.Surface(0,0,A_ScriptDir . "\Earthrise.jpg")
+i := new Canvas.Surface
+i.Load(A_ScriptDir . "\Earthrise.jpg")
 s := new Canvas.Surface(400,400)
 s.Draw(i)
 
@@ -128,9 +129,9 @@ class Canvas
         this.Font.CheckStatus := this.Font.StubCheckStatus
     }
 
-    #Include Viewport.ahk
-    #Include Surface.ahk
-    #Include Pen.ahk
-    #Include Brush.ahk
-    #Include Font.ahk
+    #Include %A_LineFile%\..\Viewport.ahk
+    #Include %A_LineFile%\..\Surface.ahk
+    #Include %A_LineFile%\..\Pen.ahk
+    #Include %A_LineFile%\..\Brush.ahk
+    #Include %A_LineFile%\..\Font.ahk
 }

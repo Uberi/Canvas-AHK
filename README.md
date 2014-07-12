@@ -4,7 +4,7 @@ High level drawing library for [AutoHotkey](http://www.autohotkey.com/).
 
 Usage
 -----
-See the Canvas-AHK documentation, located in the Documentation directory.
+See the [Canvas-AHK documentation](Documentation/Main.md).
 
 License
 -------

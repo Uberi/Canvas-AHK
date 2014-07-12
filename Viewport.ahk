@@ -58,10 +58,15 @@ class Viewport
             ,"UPtr",this.hWindow ;subclass ID
             ,"UPtr",&this) ;arbitrary data to pass to this particular subclass callback and ID
             throw Exception("INTERNAL_ERROR",A_ThisFunc,"Could not update window subclass (error in SetWindowSubclass)")
-        this.pGraphics := Surface.pGraphics
-        this.pBitmap := Surface.pBitmap
+        this.Surface := Surface
         this.Width := Surface.Width
         this.Height := Surface.Height
+        Return, this
+    }
+
+    Detach()
+    {
+        this.Surface := False
         Return, this
     }
 
@@ -82,7 +87,7 @@ class Viewport
             H := this.Height
 
         ;flush the GDI+ drawing batch
-        this.CheckStatus(DllCall("gdiplus\GdipFlush","UPtr",this.pGraphics,"UInt",1) ;FlushIntention.FlushIntentionSync
+        this.CheckStatus(DllCall("gdiplus\GdipFlush","UPtr",this.Surface.pGraphics,"UInt",1) ;FlushIntention.FlushIntentionSync
             ,"GdipFlush","Could not flush GDI+ pending rendering operations")
 
         ;set up rectangle structure representing area to redraw
@@ -114,7 +119,7 @@ class Viewport
 
         this := Object(pInstance) ;obtain the instance
 
-        If this.pGraphics ;surface attached
+        If this.Surface ;surface attached
         {
             ;obtain dimensions of update region
             X := NumGet(PaintStruct,A_PtrSize + 4,"UInt")
@@ -124,7 +129,7 @@ class Viewport
 
             ;create the GDI bitmap
             hBitmap := 0
-            this.CheckStatus(DllCall("gdiplus\GdipCreateHBITMAPFromBitmap","UPtr",this.pBitmap,"UPtr*",hBitmap,"UInt",0x000000)
+            this.CheckStatus(DllCall("gdiplus\GdipCreateHBITMAPFromBitmap","UPtr",this.Surface.pBitmap,"UPtr*",hBitmap,"UInt",0x000000)
                 ,"GdipCreateHBITMAPFromBitmap","Could not convert GDI+ bitmap to GDI bitmap")
 
             ;select the bitmap into the memory device context

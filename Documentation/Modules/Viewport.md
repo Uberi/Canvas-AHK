@@ -16,6 +16,11 @@ Attaches surface `Surface` (Canvas.Surface) to the viewport so that it is displa
 
 Returns the viewport object.
 
+### Canvas.Viewport.Detach()
+Detaches the currently attached surface, so that it is no longer displayed by the viewport.
+
+Returns the viewport object.
+
 ### Canvas.Viewport.Refresh(X = 0,Y = 0,W = 0,H = 0)
 Refreshes the viewport to reflect changes in a region of its attached surface defined by X-axis coordinate `X` (positive or zero units), Y-axis coordinate `Y` (positive or zero units), width `W` (positive or zero units), and height `H` (positive or zero units).
 
