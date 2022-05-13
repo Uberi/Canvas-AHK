@@ -33,7 +33,7 @@ TODO
 * ASCII backend with drawing functions here: http://free.pages.at/easyfilter/bresenham.html
 * combine the draw* and fill* functions: DrawPie(Pen) and FillPie(Brush) -> Pie(Pen) and Pie(Brush)
 * fold pens into brushes; allow brushes to define widths, fills, etc.
-* add hatch brush, texture brush, and linear/radial gradient brush capabilities to Brush class
+* add hatch brush class, and improve texture brush, and linear/radial gradient brush
 * use CachedBitmap for animations or faster drawing: http://msdn.microsoft.com/en-us/library/ms533975(v=vs.85).aspx
 */
 
